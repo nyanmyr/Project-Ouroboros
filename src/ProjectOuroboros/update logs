@@ -70,3 +70,11 @@ version 0.0.12 (prototype)
 progress (5/13/2025)
 • finished work on loading and saving terrain settings .json
 • town name generator (need rework)
+
+version 0.0.13 (prototype)
+progress (5/14/2025)
+• linked the project to GitHub repository
+• "Frr" biomes will now be changed to "Fr"
+• changed the biome names to their full names
+• reworked settlement name generation: names will sometimes be based on biome
+• added tag tiles for settlements

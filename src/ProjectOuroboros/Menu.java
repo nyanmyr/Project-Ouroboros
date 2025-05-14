@@ -59,8 +59,8 @@
 // • weather
 //
 // make:
-// • Link to GitHub
-// • City name generator
+// • town name display
+// • town/ biome name hide key
 // • Optimize
 // • world save/ load system
 //

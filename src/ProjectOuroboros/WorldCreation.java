@@ -65,7 +65,7 @@ public final class WorldCreation extends javax.swing.JFrame {
     HashMap<String, JLabel> tileMap = new HashMap<>();
     HashMap<String, JLabel> riverTileMap = new HashMap<>();
     HashMap<String, JLabel> settlementsTileMap = new HashMap<>();
-    HashMap<String, String> settlementsNameTileMap = new HashMap<>();
+    HashMap<String, JLabel> settlementsNameTileMap = new HashMap<>();
 
     Random randomizer = new Random();
 
@@ -91,7 +91,7 @@ public final class WorldCreation extends javax.swing.JFrame {
     JSONArray worldSettings = new JSONArray();
 
     JSONArray settlementPrefixes = new JSONArray();
-    JSONArray settlementSufix = new JSONArray();
+    JSONArray settlementSufixes = new JSONArray();
 
 //    </editor-fold>
     public WorldCreation() {
@@ -256,13 +256,13 @@ public final class WorldCreation extends javax.swing.JFrame {
                                     for (int[] pair : pairs) {
 
                                         JLabel adjacentTile = tileMap.get("x" + (x + pair[0]) + "y" + (y + pair[1]));
-                                        if (adjacentTile.getName().equals("Sh")) {
+                                        if (adjacentTile.getName().equals("Shore")) {
 
                                             selectBiome(newTile, "Be");
 
                                         } else {
 
-                                            if (!newTile.getName().equals("Be")) {
+                                            if (!newTile.getName().equals("Beach")) {
 
                                                 selectBiome(newTile, "Pl");
 
@@ -273,7 +273,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                                     }
                                     break;
                                 case 3:
-                                    if (!newTile.getName().equals("Be")) {
+                                    if (!newTile.getName().equals("Beach")) {
 
                                         if ((randomizer.nextInt(mountainSpawnRate - 2) == 0)) {
 
@@ -289,7 +289,7 @@ public final class WorldCreation extends javax.swing.JFrame {
 
                                         JLabel adjacentTile = tileMap.get("x" + (x + pair[0]) + "y" + (y + pair[1]));
                                         if (adjacentTile.getName().equals("Mt")
-                                                && !newTile.getName().equals("Be")
+                                                && !newTile.getName().equals("Beach")
                                                 && !newTile.getName().equals("Mt")) {
 
                                             selectBiome(newTile, "Ht");
@@ -304,8 +304,8 @@ public final class WorldCreation extends javax.swing.JFrame {
                                     for (int[] pair : pairs) {
 
                                         JLabel adjacentTile = tileMap.get("x" + (x + pair[0]) + "y" + (y + pair[1]));
-                                        if (adjacentTile.getName().equals("Ht")
-                                                && !newTile.getName().equals("Be")
+                                        if (adjacentTile.getName().equals("Hill")
+                                                && !newTile.getName().equals("Beach")
                                                 && !newTile.getName().equals("Mt")) {
 
                                             if ((randomizer.nextInt(mountainSpawnRate + 4) == 0)) {
@@ -319,8 +319,8 @@ public final class WorldCreation extends javax.swing.JFrame {
                                     }
                                     break;
                                 case 6:
-                                    if (!newTile.getName().equals("Ht")
-                                            && !newTile.getName().equals("Be")) {
+                                    if (!newTile.getName().equals("Hill")
+                                            && !newTile.getName().equals("Beach")) {
 
                                         if ((randomizer.nextInt(lakeSpawnRate) == 0)) {
 
@@ -340,7 +340,7 @@ public final class WorldCreation extends javax.swing.JFrame {
 
                                         try {
 
-                                            if ((newTile.getName().equals("Pl")) && (currentRiverTile.getName().equals("Rv"))) {
+                                            if ((newTile.getName().equals("Plain")) && (currentRiverTile.getName().equals("River"))) {
 
                                                 if (randomizer.nextInt(forestSpawnRate / 6) == 0 && forestsGenerated <= forestSources) {
 //                                                    System.out.println("New Forest: " + tileCoordinates);
@@ -364,11 +364,11 @@ public final class WorldCreation extends javax.swing.JFrame {
                                     for (int[] pair : pairs) {
 
                                         JLabel adjacentTile = tileMap.get("x" + (x + pair[0]) + "y" + (y + pair[1]));
-                                        if (adjacentTile.getName().equals("Fr")
-                                                && !newTile.getName().equals("Lk")
-                                                && !newTile.getName().equals("Be")
+                                        if (adjacentTile.getName().equals("Forest")
+                                                && !newTile.getName().equals("Lake")
+                                                && !newTile.getName().equals("Beach")
                                                 && !newTile.getName().equals("Mt")
-                                                && !newTile.getName().equals("Ht")) {
+                                                && !newTile.getName().equals("Hill")) {
 
                                             selectBiome(newTile, "Frr");
 //                                            System.out.println("Forest Found: " + ("x" + (x + pair[0]) + "y" + (y + pair[1])));
@@ -385,10 +385,10 @@ public final class WorldCreation extends javax.swing.JFrame {
 
                                         JLabel adjacentTile = tileMap.get("x" + (x + pair[0]) + "y" + (y + pair[1]));
                                         if (adjacentTile.getName().equals("Frr")
-                                                && !newTile.getName().equals("Lk")
-                                                && !newTile.getName().equals("Be")
+                                                && !newTile.getName().equals("Lake")
+                                                && !newTile.getName().equals("Beach")
                                                 && !newTile.getName().equals("Mt")
-                                                && !newTile.getName().equals("Ht")) {
+                                                && !newTile.getName().equals("Hill")) {
 
                                             if ((randomizer.nextInt(forestSpawnRate / 6) == 0)) {
 
@@ -446,7 +446,7 @@ public final class WorldCreation extends javax.swing.JFrame {
 
                                     if (generateWaterSource) {
 
-                                        if (currentTile.getName().equals("Ht")) {
+                                        if (currentTile.getName().equals("Hill")) {
 
                                             for (int[] pair : pairs) {
 
@@ -459,7 +459,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                                                 try {
 
 //                                                    System.out.println("adjacentRiverTile: " + adjacentRiverTile.getName());
-                                                    if (adjacentTile.getName().equals("Lk")
+                                                    if (adjacentTile.getName().equals("Lake")
                                                             || adjacentRiverTile.getName().equals("Rs")) {
 
 //                                                        System.out.println("Nearby Water: " + adjacentTileName);
@@ -524,7 +524,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                                                     String adjacentTileName = "x" + (tileX + pair[0]) + "y" + (tileY + pair[1]);
                                                     JLabel adjacentTile = tileMap.get(adjacentTileName);
 
-                                                    if (adjacentTile.getName().equals("Lk") || adjacentTile.getName().equals("Sh")) {
+                                                    if (adjacentTile.getName().equals("Lake") || adjacentTile.getName().equals("Shore")) {
 
 //                                            System.out.println("pairChosen: " + pairChosen);
                                                         int xDifference = (tileX + pair[0]) - tileX;
@@ -583,8 +583,8 @@ public final class WorldCreation extends javax.swing.JFrame {
                                                 JLabel currentcurrentRiverTile = tileMap.get(riverTileCoordinates);
 //                                                System.out.println("currentTile: " + currentcurrentRiverTile.getName());
                                                 switch (currentcurrentRiverTile.getName()) {
-                                                    case "Ht":
-                                                    case "Mt":
+                                                    case "Hill":
+                                                    case "Mountain":
 //                                                        System.out.println("Mountain destroyed!");
                                                         currentcurrentRiverTile = generateProtoTile(riverTileCoordinates);
                                                         selectBiome(currentcurrentRiverTile, "Pl");
@@ -622,7 +622,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                                                     JLabel riverTile = riverTileMap.get(riverTileCoordinates);
 
                                                     // I cheated again!  aww crud!
-                                                    if (riverTile.getName().equals("Rs") || riverTile.getName().equals("Rv")) {
+                                                    if (riverTile.getName().equals("Rs") || riverTile.getName().equals("River")) {
 
 //                                                        System.out.println("River Source Removed");
                                                         riverSourcesGenerated--;
@@ -726,6 +726,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                     String randomTileCoordinates = "x" + randomX + "y" + randomY;
                     JLabel currentTile = tileMap.get(randomTileCoordinates);
                     JLabel settlementTile = generateProtoTile(randomTileCoordinates);
+                    JLabel settlementNameTile = generateProtoTile(randomTileCoordinates);
 
                     int searchMultiplier = 0;
                     int searchX = 0;
@@ -751,18 +752,18 @@ public final class WorldCreation extends javax.swing.JFrame {
 
                     }
 
-                    if (currentTile.getName().equals("Be")
+                    if (currentTile.getName().equals("Beach")
                             && !capitalGenerated) {
 
                         generateSettlement = true;
-                        selectBiome(settlementTile, "Capital");
+                        selectBiome(settlementTile, "Ca");
 //                        System.out.println("Capital City Location: " + randomTileCoordinates);
                         capitalGenerated = true;
 
                     } else if (capitalGenerated
-                            && !currentTile.getName().equals("Ct")
+                            && !currentTile.getName().equals("City")
                             && !currentTile.getName().equals("Mt")
-                            && !currentTile.getName().equals("Lk")
+                            && !currentTile.getName().equals("Lake")
                             && citiesGenerated < cities) {
 
                         boolean suitable = true;
@@ -781,8 +782,8 @@ public final class WorldCreation extends javax.swing.JFrame {
                                     JLabel adjacentTile = settlementsTileMap.get(adjacentTileName);
 //                                    System.out.println("Tile: " + adjacentTile.getName());
 
-                                    if (adjacentTile.getName().equals("Ca")
-                                            || adjacentTile.getName().equals("Ct")) {
+                                    if (adjacentTile.getName().equals("Capital")
+                                            || adjacentTile.getName().equals("City")) {
                                         suitable = false;
 //                                        System.out.println("Found Nearby Settlement: " + adjacentTileName);
                                         break SEARCH;
@@ -800,7 +801,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                         if (suitable) {
 
                             generateSettlement = true;
-                            selectBiome(settlementTile, "City");
+                            selectBiome(settlementTile, "Ct");
 //                            System.out.println("City Location: " + randomTileCoordinates);
                             citiesGenerated++;
                             loops = 0;
@@ -808,10 +809,10 @@ public final class WorldCreation extends javax.swing.JFrame {
                         }
 
                     } else if (citiesGenerated >= cities
-                            && !currentTile.getName().equals("Ct")
-                            && !currentTile.getName().equals("Ca")
+                            && !currentTile.getName().equals("City")
+                            && !currentTile.getName().equals("Capital")
                             && !currentTile.getName().equals("Mt")
-                            && !currentTile.getName().equals("Lk")
+                            && !currentTile.getName().equals("Lake")
                             && townsGenerated < towns) {
 
                         boolean suitable = true;
@@ -830,9 +831,9 @@ public final class WorldCreation extends javax.swing.JFrame {
                                     JLabel adjacentTile = settlementsTileMap.get(adjacentTileName);
 //                                    System.out.println("Tile: " + adjacentTile.getName());
 
-                                    if (adjacentTile.getName().equals("Ca")
-                                            || adjacentTile.getName().equals("Ct")
-                                            || adjacentTile.getName().equals("Tw")) {
+                                    if (adjacentTile.getName().equals("Capital")
+                                            || adjacentTile.getName().equals("City")
+                                            || adjacentTile.getName().equals("Town")) {
                                         suitable = false;
 //                                        System.out.println("Found Nearby Settlement: " + adjacentTileName);
                                         break SEARCH;
@@ -850,7 +851,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                         if (suitable) {
 
                             generateSettlement = true;
-                            selectBiome(settlementTile, "Town");
+                            selectBiome(settlementTile, "Tw");
 //                            System.out.println("Town Location: " + randomTileCoordinates);
                             townsGenerated++;
                             loops = 0;
@@ -858,11 +859,11 @@ public final class WorldCreation extends javax.swing.JFrame {
                         }
 
                     } else if (townsGenerated >= towns
-                            && !currentTile.getName().equals("Tw")
-                            && !currentTile.getName().equals("Ct")
-                            && !currentTile.getName().equals("Ca")
+                            && !currentTile.getName().equals("Town")
+                            && !currentTile.getName().equals("City")
+                            && !currentTile.getName().equals("Capital")
                             && !currentTile.getName().equals("Mt")
-                            && !currentTile.getName().equals("Lk")
+                            && !currentTile.getName().equals("Lake")
                             && villagesGenerated < villages) {
 
 //                        System.out.println("searchMultiplier: " + searchMultiplier);
@@ -882,10 +883,10 @@ public final class WorldCreation extends javax.swing.JFrame {
                                     JLabel adjacentTile = settlementsTileMap.get(adjacentTileName);
 //                                    System.out.println("Tile: " + adjacentTile.getName());
 
-                                    if (adjacentTile.getName().equals("Ca")
-                                            || adjacentTile.getName().equals("Ct")
-                                            || adjacentTile.getName().equals("Tw")
-                                            || adjacentTile.getName().equals("Vl")) {
+                                    if (adjacentTile.getName().equals("Capital")
+                                            || adjacentTile.getName().equals("City")
+                                            || adjacentTile.getName().equals("Town")
+                                            || adjacentTile.getName().equals("Village")) {
                                         suitable = false;
 //                                        System.out.println("Found Nearby Settlement: " + adjacentTileName);
                                         break SEARCH;
@@ -903,7 +904,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                         if (suitable) {
 
                             generateSettlement = true;
-                            selectBiome(settlementTile, "Village");
+                            selectBiome(settlementTile, "Vl");
 //                            System.out.println("Village Location: " + randomTileCoordinates);
                             villagesGenerated++;
                             loops = 0;
@@ -914,7 +915,7 @@ public final class WorldCreation extends javax.swing.JFrame {
 
                     if (generateSettlement) {
                         tileMapAddition(settlementTile, randomTileCoordinates, settlementsTileMap);
-                        generateSettlementName(randomTileCoordinates, settlementsNameTileMap);
+                        generateSettlementName(randomTileCoordinates, settlementNameTile);
                     }
                     loops++;
 
@@ -981,12 +982,25 @@ public final class WorldCreation extends javax.swing.JFrame {
         panel_Mainpanel.revalidate();
         panel_Mainpanel.repaint();
 
+        // changes the placeholder biome "Frr" to Fr
+        for (String key : tileMap.keySet()) {
+
+            JLabel tile = tileMap.get(key);
+            if (tile.getName().equals("Frr")) {
+                selectBiome(tile, "Fr");
+            }
+
+        }
+
         // <editor-fold desc="adjusts component z order and window focus">
         // Puts the rivertiles in a higher order
         for (String key : riverTileMap.keySet()) {
 
             JLabel riverTile = riverTileMap.get(key);
-            if (riverTile.getName().equals("Rv")) {
+            if (riverTile.getName().equals("River")) {
+                riverTile.setBorder(null);
+                riverTile.setText("");
+                riverTile.setOpaque(false);
                 panel_Mainpanel.setComponentZOrder(riverTile, 0);
             }
 
@@ -998,10 +1012,10 @@ public final class WorldCreation extends javax.swing.JFrame {
             JLabel settlementTile = settlementsTileMap.get(key);
             try {
 
-                if (settlementTile.getName().equals("Ca")
-                        || settlementTile.getName().equals("Ct")
-                        || settlementTile.getName().equals("Tw")
-                        || settlementTile.getName().equals("Vl")) {
+                if (settlementTile.getName().equals("Capital")
+                        || settlementTile.getName().equals("City")
+                        || settlementTile.getName().equals("Town")
+                        || settlementTile.getName().equals("Village")) {
                     panel_Mainpanel.setComponentZOrder(settlementTile, 0);
                 }
 
@@ -1011,7 +1025,24 @@ public final class WorldCreation extends javax.swing.JFrame {
 
         }
 
+        // Puts the rivertiles in a higher order
+        for (String key : settlementsNameTileMap.keySet()) {
+
+            JLabel settlementNameTile = settlementsNameTileMap.get(key);
+            try {
+
+                if (!settlementNameTile.getName().isEmpty()) {
+                    panel_Mainpanel.setComponentZOrder(settlementNameTile, 0);
+                }
+
+            } catch (Exception e) {
+
+            }
+
+        }
+
         panel_Mainpanel.setComponentZOrder(label_Player, 0);
+        panel_Mainpanel.setComponentZOrder(label_ZoomScale, 0);
         panel_Mainpanel.setComponentZOrder(label_Coordinates, 0);
         panel_Mainpanel.setComponentZOrder(label_Biome, 0);
         panel_Mainpanel.setComponentZOrder(label_River, 0);
@@ -1043,17 +1074,80 @@ public final class WorldCreation extends javax.swing.JFrame {
         // Makes sure that the main panel is the focus
         panel_Mainpanel.requestFocusInWindow();
         // </editor-fold>
+
     }
 
     // might want to work a system to make prefixes more accurate
-    public void generateSettlementName(String tileCoordinates, HashMap<String, String> tileMap) {
+    public void generateSettlementName(String tileCoordinates, JLabel settlementNameTile) {
 
-        JSONObject prefixObj = (JSONObject) settlementPrefixes.get((int) (Math.random() * ((settlementPrefixes.size() - 1) - 0 + 1)) + 0);
-        JSONObject sufixObj = (JSONObject) settlementSufix.get((int) (Math.random() * ((settlementSufix.size() - 1) - 0 + 1)) + 0);
+        JSONObject biomeObj;
+        JSONArray prefixArray;
+        JSONObject prefixObj;
+        JSONArray sufixArray;
+        JSONObject sufixObj;
+
+        String biome = tileMap.get(tileCoordinates).getName();
+        try {
+            if (riverTileMap.get(tileCoordinates).getName().equals("River")) {
+                biome = riverTileMap.get(tileCoordinates).getName();
+            }
+        } catch (Exception e) {
+
+        }
+
+        int biomeIndex = 0;
+        switch (biome) {
+            case "Beach":
+                biomeIndex = 0;
+                break;
+            case "Plain":
+                biomeIndex = 1;
+                break;
+            case "Hill":
+                biomeIndex = 2;
+                break;
+            case "Frr":
+                biome = "Forest";
+                biomeIndex = 3;
+                break;
+            case "River":
+                biomeIndex = 4;
+                break;
+        }
+
+        if (randomizer.nextInt(3) == 0) {
+
+            biomeObj = (JSONObject) settlementPrefixes.get(biomeIndex);
+            prefixArray = (JSONArray) biomeObj.get(biome);
+            prefixObj = (JSONObject) prefixArray.get((int) (Math.random() * ((prefixArray.size() - 1) - 0 + 1)) + 0);
+
+            biomeObj = (JSONObject) settlementSufixes.get(5);
+            sufixArray = (JSONArray) biomeObj.get("Generic");
+            sufixObj = (JSONObject) sufixArray.get((int) (Math.random() * ((sufixArray.size() - 1) - 0 + 1)) + 0);
+
+        } else {
+
+            biomeObj = (JSONObject) settlementPrefixes.get(5);
+            prefixArray = (JSONArray) biomeObj.get("Generic");
+            prefixObj = (JSONObject) prefixArray.get((int) (Math.random() * ((prefixArray.size() - 1) - 0 + 1)) + 0);
+
+            biomeObj = (JSONObject) settlementSufixes.get(biomeIndex);
+            sufixArray = (JSONArray) biomeObj.get(biome);
+            sufixObj = (JSONObject) sufixArray.get((int) (Math.random() * ((sufixArray.size() - 1) - 0 + 1)) + 0);
+
+        }
+
+//        System.out.println("prefixObj: " + prefixObj);
+//        System.out.println("sufixObj: " + sufixObj);
+//        System.out.println();
         String generatedName = prefixObj.get("").toString();
         generatedName = generatedName.concat(sufixObj.get("").toString());
-        tileMap.put(tileCoordinates, generatedName);
-
+        JLabel settlementTile = generateProtoTile(tileCoordinates);
+        settlementTile.setText(generatedName);
+        settlementTile.setName(generatedName);
+        panel_Mainpanel.add(settlementTile);
+        settlementTile.setVisible(true);
+        settlementsNameTileMap.put(tileCoordinates, settlementTile);
     }
 
     public void tileMapAddition(JLabel newTile, String tileCoordinates, HashMap<String, JLabel> tileMap) {
@@ -1078,6 +1172,7 @@ public final class WorldCreation extends javax.swing.JFrame {
         // Sets the text of the following Jlabels to the proper coords and biome
         label_Coordinates.setText("Location: " + "x" + coordinatesX + "y" + coordinatesY);
         label_Biome.setText("Biome: " + tileMap.get("x" + coordinatesX + "y" + coordinatesY).getName());
+        label_ZoomScale.setText("ZoomScale: " + Float.toString(zoomScale));
 
         try {
 
@@ -1092,7 +1187,7 @@ public final class WorldCreation extends javax.swing.JFrame {
         try {
 
             label_SettlementType.setText("Settlement Type: " + settlementsTileMap.get("x" + coordinatesX + "y" + coordinatesY).getName());
-            label_SettlementName.setText("Settlement Name: " + settlementsNameTileMap.get("x" + coordinatesX + "y" + coordinatesY));
+            label_SettlementName.setText("Settlement Name: " + settlementsNameTileMap.get("x" + coordinatesX + "y" + coordinatesY).getName());
 
         } catch (Exception e) {
 
@@ -1109,6 +1204,7 @@ public final class WorldCreation extends javax.swing.JFrame {
         panel_Mainpanel = new javax.swing.JPanel();
         label_ProtoTile = new javax.swing.JLabel();
         label_Player = new javax.swing.JLabel();
+        label_ZoomScale = new javax.swing.JLabel();
         label_SettlementName = new javax.swing.JLabel();
         label_SettlementType = new javax.swing.JLabel();
         label_River = new javax.swing.JLabel();
@@ -1187,6 +1283,14 @@ public final class WorldCreation extends javax.swing.JFrame {
         panel_Mainpanel.add(label_Player);
         label_Player.setBounds(230, 300, 75, 75);
 
+        label_ZoomScale.setBackground(new java.awt.Color(51, 51, 51));
+        label_ZoomScale.setForeground(new java.awt.Color(255, 255, 255));
+        label_ZoomScale.setText("jLabel1");
+        label_ZoomScale.setToolTipText(null);
+        label_ZoomScale.setOpaque(true);
+        panel_Mainpanel.add(label_ZoomScale);
+        label_ZoomScale.setBounds(340, 30, 150, 25);
+
         label_SettlementName.setBackground(new java.awt.Color(51, 51, 51));
         label_SettlementName.setForeground(new java.awt.Color(255, 255, 255));
         label_SettlementName.setText("jLabel1");
@@ -1244,7 +1348,7 @@ public final class WorldCreation extends javax.swing.JFrame {
         label_ForestBranches.setToolTipText(null);
         label_ForestBranches.setOpaque(true);
         panel_Mainpanel.add(label_ForestBranches);
-        label_ForestBranches.setBounds(550, 570, 200, 20);
+        label_ForestBranches.setBounds(710, 590, 200, 20);
 
         slider_ForestBranches.setBackground(new java.awt.Color(51, 51, 51));
         slider_ForestBranches.setForeground(new java.awt.Color(102, 102, 102));
@@ -1259,14 +1363,14 @@ public final class WorldCreation extends javax.swing.JFrame {
         slider_ForestBranches.setOpaque(true);
         slider_ForestBranches.setRequestFocusEnabled(false);
         panel_Mainpanel.add(slider_ForestBranches);
-        slider_ForestBranches.setBounds(550, 590, 200, 44);
+        slider_ForestBranches.setBounds(710, 610, 200, 44);
 
         label_HillBranches.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_HillBranches.setText("Hill Branches");
         label_HillBranches.setToolTipText(null);
         label_HillBranches.setOpaque(true);
         panel_Mainpanel.add(label_HillBranches);
-        label_HillBranches.setBounds(550, 500, 200, 20);
+        label_HillBranches.setBounds(710, 520, 200, 20);
 
         slider_HillBranches.setBackground(new java.awt.Color(51, 51, 51));
         slider_HillBranches.setForeground(new java.awt.Color(102, 102, 102));
@@ -1281,14 +1385,14 @@ public final class WorldCreation extends javax.swing.JFrame {
         slider_HillBranches.setOpaque(true);
         slider_HillBranches.setRequestFocusEnabled(false);
         panel_Mainpanel.add(slider_HillBranches);
-        slider_HillBranches.setBounds(550, 520, 200, 44);
+        slider_HillBranches.setBounds(710, 540, 200, 44);
 
         label_ForestSources.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_ForestSources.setText("Forests");
         label_ForestSources.setToolTipText(null);
         label_ForestSources.setOpaque(true);
         panel_Mainpanel.add(label_ForestSources);
-        label_ForestSources.setBounds(550, 430, 200, 20);
+        label_ForestSources.setBounds(710, 450, 200, 20);
 
         slider_ForestSources.setBackground(new java.awt.Color(51, 51, 51));
         slider_ForestSources.setForeground(new java.awt.Color(102, 102, 102));
@@ -1303,14 +1407,14 @@ public final class WorldCreation extends javax.swing.JFrame {
         slider_ForestSources.setOpaque(true);
         slider_ForestSources.setRequestFocusEnabled(false);
         panel_Mainpanel.add(slider_ForestSources);
-        slider_ForestSources.setBounds(550, 450, 200, 44);
+        slider_ForestSources.setBounds(710, 470, 200, 44);
 
         label_RiverSources.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_RiverSources.setText("Rivers");
         label_RiverSources.setToolTipText(null);
         label_RiverSources.setOpaque(true);
         panel_Mainpanel.add(label_RiverSources);
-        label_RiverSources.setBounds(550, 360, 200, 20);
+        label_RiverSources.setBounds(710, 380, 200, 20);
 
         slider_RiverSources.setBackground(new java.awt.Color(51, 51, 51));
         slider_RiverSources.setForeground(new java.awt.Color(102, 102, 102));
@@ -1325,14 +1429,14 @@ public final class WorldCreation extends javax.swing.JFrame {
         slider_RiverSources.setOpaque(true);
         slider_RiverSources.setRequestFocusEnabled(false);
         panel_Mainpanel.add(slider_RiverSources);
-        slider_RiverSources.setBounds(550, 380, 200, 44);
+        slider_RiverSources.setBounds(710, 400, 200, 44);
 
         label_ForestSpawnRate.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_ForestSpawnRate.setText("Forest Spawn Rate");
         label_ForestSpawnRate.setToolTipText(null);
         label_ForestSpawnRate.setOpaque(true);
         panel_Mainpanel.add(label_ForestSpawnRate);
-        label_ForestSpawnRate.setBounds(550, 290, 200, 20);
+        label_ForestSpawnRate.setBounds(710, 310, 200, 20);
 
         slider_ForestSpawnRate.setBackground(new java.awt.Color(51, 51, 51));
         slider_ForestSpawnRate.setForeground(new java.awt.Color(102, 102, 102));
@@ -1347,14 +1451,14 @@ public final class WorldCreation extends javax.swing.JFrame {
         slider_ForestSpawnRate.setOpaque(true);
         slider_ForestSpawnRate.setRequestFocusEnabled(false);
         panel_Mainpanel.add(slider_ForestSpawnRate);
-        slider_ForestSpawnRate.setBounds(550, 310, 200, 44);
+        slider_ForestSpawnRate.setBounds(710, 330, 200, 44);
 
         label_LakeSpawnRate.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_LakeSpawnRate.setText("Lake Spawn Rate");
         label_LakeSpawnRate.setToolTipText(null);
         label_LakeSpawnRate.setOpaque(true);
         panel_Mainpanel.add(label_LakeSpawnRate);
-        label_LakeSpawnRate.setBounds(550, 220, 200, 20);
+        label_LakeSpawnRate.setBounds(710, 240, 200, 20);
 
         slider_LakeSpawnRate.setBackground(new java.awt.Color(51, 51, 51));
         slider_LakeSpawnRate.setForeground(new java.awt.Color(102, 102, 102));
@@ -1369,14 +1473,14 @@ public final class WorldCreation extends javax.swing.JFrame {
         slider_LakeSpawnRate.setOpaque(true);
         slider_LakeSpawnRate.setRequestFocusEnabled(false);
         panel_Mainpanel.add(slider_LakeSpawnRate);
-        slider_LakeSpawnRate.setBounds(550, 240, 200, 44);
+        slider_LakeSpawnRate.setBounds(710, 260, 200, 44);
 
         label_MountainSpawnRate.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_MountainSpawnRate.setText("Mountain Spawn Rate");
         label_MountainSpawnRate.setToolTipText(null);
         label_MountainSpawnRate.setOpaque(true);
         panel_Mainpanel.add(label_MountainSpawnRate);
-        label_MountainSpawnRate.setBounds(550, 150, 200, 20);
+        label_MountainSpawnRate.setBounds(710, 170, 200, 20);
 
         slider_MountainSpawnRate.setBackground(new java.awt.Color(51, 51, 51));
         slider_MountainSpawnRate.setForeground(new java.awt.Color(102, 102, 102));
@@ -1391,14 +1495,14 @@ public final class WorldCreation extends javax.swing.JFrame {
         slider_MountainSpawnRate.setOpaque(true);
         slider_MountainSpawnRate.setRequestFocusEnabled(false);
         panel_Mainpanel.add(slider_MountainSpawnRate);
-        slider_MountainSpawnRate.setBounds(550, 170, 200, 44);
+        slider_MountainSpawnRate.setBounds(710, 190, 200, 44);
 
         label_Population.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_Population.setText("Population");
         label_Population.setToolTipText(null);
         label_Population.setOpaque(true);
         panel_Mainpanel.add(label_Population);
-        label_Population.setBounds(550, 80, 200, 20);
+        label_Population.setBounds(710, 100, 200, 20);
 
         slider_Population.setBackground(new java.awt.Color(51, 51, 51));
         slider_Population.setForeground(new java.awt.Color(102, 102, 102));
@@ -1413,14 +1517,14 @@ public final class WorldCreation extends javax.swing.JFrame {
         slider_Population.setOpaque(true);
         slider_Population.setRequestFocusEnabled(false);
         panel_Mainpanel.add(slider_Population);
-        slider_Population.setBounds(550, 100, 200, 44);
+        slider_Population.setBounds(710, 120, 200, 44);
 
         label_MapSize.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_MapSize.setText("Size");
         label_MapSize.setToolTipText(null);
         label_MapSize.setOpaque(true);
         panel_Mainpanel.add(label_MapSize);
-        label_MapSize.setBounds(550, 10, 200, 20);
+        label_MapSize.setBounds(710, 30, 200, 20);
 
         slider_MapSize.setBackground(new java.awt.Color(51, 51, 51));
         slider_MapSize.setForeground(new java.awt.Color(102, 102, 102));
@@ -1435,14 +1539,14 @@ public final class WorldCreation extends javax.swing.JFrame {
         slider_MapSize.setOpaque(true);
         slider_MapSize.setRequestFocusEnabled(false);
         panel_Mainpanel.add(slider_MapSize);
-        slider_MapSize.setBounds(550, 30, 200, 44);
+        slider_MapSize.setBounds(710, 50, 200, 44);
 
         label_TileScale.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         label_TileScale.setText("Tile Scale");
         label_TileScale.setToolTipText(null);
         label_TileScale.setOpaque(true);
         panel_Mainpanel.add(label_TileScale);
-        label_TileScale.setBounds(340, 10, 200, 20);
+        label_TileScale.setBounds(500, 30, 200, 20);
 
         slider_TileScale.setBackground(new java.awt.Color(51, 51, 51));
         slider_TileScale.setForeground(new java.awt.Color(102, 102, 102));
@@ -1455,7 +1559,7 @@ public final class WorldCreation extends javax.swing.JFrame {
         slider_TileScale.setOpaque(true);
         slider_TileScale.setRequestFocusEnabled(false);
         panel_Mainpanel.add(slider_TileScale);
-        slider_TileScale.setBounds(340, 30, 200, 44);
+        slider_TileScale.setBounds(500, 50, 200, 44);
 
         button_Save.setForeground(new java.awt.Color(0, 0, 0));
         button_Save.setText("Save");
@@ -1536,8 +1640,12 @@ public final class WorldCreation extends javax.swing.JFrame {
         label_Coordinates.setBounds(25,
                 (int) (screenHeight * 0.025),
                 300, 25);
-        //        </editor-fold>
 
+        label_ZoomScale.setBounds(350,
+                (int) (screenHeight * 0.025),
+                150, 25);
+
+        //        </editor-fold>
         //        <editor-fold desc="sliders"> 
         label_TileScale.setBounds((int) (screenWidth - 650),
                 (int) (screenHeight * 0.025),
@@ -1665,11 +1773,8 @@ public final class WorldCreation extends javax.swing.JFrame {
 
                             JLabel riverTile = riverTileMap.get(("x" + x + "y" + y));
 
-                            if (riverTile.getName().equals("Rv")) {
+                            if (riverTile.getName().equals("River")) {
                                 //                            System.out.println("River Source Found: " + ("x" + x + "y" + y));
-                                riverTile.setBorder(null);
-                                riverTile.setText("");
-                                riverTile.setOpaque(false);
                                 riverTile.setBounds(((((int) (screenWidth * 0.5)) - (int) (zoomScale * tileScale) + (int) (zoomScale * (tileScale / 2)))) + (int) (x * (zoomScale * tileScale)) - (int) (coordinatesX * (zoomScale * tileScale)),
                                         ((((int) (screenHeight * 0.5)) - (int) (zoomScale * tileScale) + (int) (zoomScale * (tileScale / 2)))) + (int) (y * (zoomScale * tileScale)) - (int) (coordinatesY * (zoomScale * tileScale)),
                                         (int) (zoomScale * tileScale), (int) (zoomScale * tileScale));
@@ -1705,16 +1810,32 @@ public final class WorldCreation extends javax.swing.JFrame {
 
                             JLabel settlementTile = settlementsTileMap.get("x" + x + "y" + y);
 
-                            if (settlementTile.getName().equals("Ca")
-                                    || settlementTile.getName().equals("Ct")
-                                    || settlementTile.getName().equals("Tw")
-                                    || settlementTile.getName().equals("Vl")) {
+                            if (settlementTile.getName().equals("Capital")
+                                    || settlementTile.getName().equals("City")
+                                    || settlementTile.getName().equals("Town")
+                                    || settlementTile.getName().equals("Village")) {
 
                                 //                        System.out.println("Found: " + ("x" + x + "y" + y));w
                                 settlementTile.setBounds(((((int) (screenWidth * 0.5)) - (int) (zoomScale * tileScale) + (int) ((zoomScale * tileScale * 3) / 4))) + (int) (x * (zoomScale * tileScale)) - (int) (coordinatesX * (zoomScale * tileScale)),
                                         ((((int) (screenHeight * 0.5)) - (int) (zoomScale * tileScale) + (int) ((zoomScale * tileScale * 3) / 4))) + (int) (y * (zoomScale * tileScale)) - (int) (coordinatesY * (zoomScale * tileScale)),
                                         (int) (zoomScale * (tileScale / 2)), (int) (zoomScale * (tileScale / 2)));
 
+                            }
+
+                        } catch (Exception e) {
+
+                        }
+                        //              </editor-fold>
+
+                        //              <editor-fold desc="deals with the settlement names tiles">
+                        try {
+
+                            JLabel settlementNameTile = settlementsNameTileMap.get("x" + x + "y" + y);
+                            if (!settlementNameTile.getName().isEmpty()) {
+                                settlementNameTile.setFont(new java.awt.Font("Segoe UI", 0, (int) (6 + (zoomScale * 4))));
+                                settlementNameTile.setBounds(((((int) (screenWidth * 0.5)) - (int) (zoomScale * tileScale) + (int) ((zoomScale * tileScale * 3) / 5))) + (int) (x * (zoomScale * tileScale)) - (int) (coordinatesX * (zoomScale * tileScale)) - (int) ((tileScale * ((zoomScale - 3) * -1)) / 20),
+                                        ((((int) (screenHeight * 0.5)) - (int) (zoomScale * tileScale) + (int) ((zoomScale * tileScale * 4) / 7))) + (int) (y * (zoomScale * tileScale)) - (int) (coordinatesY * (zoomScale * tileScale)),
+                                        (int) (zoomScale * (tileScale / 1.25)) + (int) ((tileScale * ((zoomScale - 3) * -1)) / 10), (int) (zoomScale * (tileScale / 5)));
                             }
 
                         } catch (Exception e) {
@@ -1821,9 +1942,8 @@ public final class WorldCreation extends javax.swing.JFrame {
     }//GEN-LAST:event_button_GenerateActionPerformed
 
     private void button_SaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_SaveActionPerformed
-        
-        
-        
+
+
     }//GEN-LAST:event_button_SaveActionPerformed
 
     private void loadSettlementNames() {
@@ -1840,8 +1960,8 @@ public final class WorldCreation extends javax.swing.JFrame {
             System.out.println("settlementPrefixes: " + settlementPrefixes.size());
 
             settlementNamesObj = (JSONObject) loadCurrentArray.get(1);
-            settlementSufix = (JSONArray) settlementNamesObj.get("sufix");
-            System.out.println("settlementSufix: " + settlementSufix.size());
+            settlementSufixes = (JSONArray) settlementNamesObj.get("sufix");
+            System.out.println("settlementSufixes: " + settlementSufixes.size());
 
             linebreak(1);
 
@@ -2028,6 +2148,7 @@ public final class WorldCreation extends javax.swing.JFrame {
     private javax.swing.JLabel label_SettlementName;
     private javax.swing.JLabel label_SettlementType;
     private javax.swing.JLabel label_TileScale;
+    private javax.swing.JLabel label_ZoomScale;
     private javax.swing.JPanel panel_Mainpanel;
     private javax.swing.JSlider slider_ForestBranches;
     private javax.swing.JSlider slider_ForestSources;
@@ -2066,140 +2187,113 @@ public final class WorldCreation extends javax.swing.JFrame {
 
     private JLabel selectBiome(JLabel label, String biome) {
 
-        if (biome.equals("Oc")) {
-
-            label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-            label.setBackground(new java.awt.Color(0, 0, 100));
-            label.setForeground(new java.awt.Color(255, 255, 255));
-            label.setText("Oc");
-            label.setName("Oc");
-
-        } else if (biome.equals("Sh")) {
-
-            label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-            label.setBackground(new java.awt.Color(0, 50, 205));
-            label.setForeground(new java.awt.Color(255, 255, 255));
-            label.setText("Sh");
-            label.setName("Sh");
-
-        } else if (biome.equals("Be")) {
-
-            label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-            label.setBackground(new java.awt.Color(255, 255, 153));
-            label.setForeground(new java.awt.Color(0, 0, 0));
-            label.setText("Be");
-            label.setName("Be");
-
-        } else if (biome.equals("Pl")) {
-
-            label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-            label.setBackground(new java.awt.Color(22, 109, 22));
-            label.setForeground(new java.awt.Color(0, 0, 0));
-            label.setText("Pl");
-            label.setName("Pl");
-
-        } else if (biome.equals("Mt")) {
-
-            label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-            label.setBackground(new java.awt.Color(20, 20, 26));
-            label.setForeground(new java.awt.Color(255, 255, 255));
-            label.setText("Mt");
-            label.setName("Mt");
-
-        } else if (biome.equals("Ht")) {
-
-            label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-            label.setBackground(new java.awt.Color(40, 40, 46));
-            label.setForeground(new java.awt.Color(0, 0, 0));
-            label.setText("Ht");
-            label.setName("Ht");
-
-        } else if (biome.equals("Lk")) {
-
-            label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-            label.setBackground(new java.awt.Color(15, 80, 245));
-            label.setForeground(new java.awt.Color(255, 255, 255));
-            label.setText("Lk");
-            label.setName("Lk");
-
-        } else if (biome.equals("Rs")) {
-
-            label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-            label.setBackground(new java.awt.Color(10, 50, 205));
-            label.setForeground(new java.awt.Color(0, 0, 0));
-            label.setText("Rs");
-            label.setName("Rs");
-
-        } else if (biome.equals("Rv")) {
-
-            label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-            label.setBackground(new java.awt.Color(10, 50, 255));
-            label.setForeground(new java.awt.Color(0, 0, 0));
-            label.setName("Rv");
-
-        } else if (biome.equals("Fr")) {
-
-            label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-            label.setBackground(new java.awt.Color(22, 44, 22));
-            label.setForeground(new java.awt.Color(255, 255, 255));
-            label.setText("Fr");
-            label.setName("Fr");
-
-        } else if (biome.equals("Rs")) {
-
-            label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-            label.setBackground(new java.awt.Color(10, 50, 205));
-            label.setForeground(new java.awt.Color(0, 0, 0));
-            label.setText("Rs");
-            label.setName("Rs");
-
-        } else if (biome.equals("Rv")) {
-
-            label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-            label.setBackground(new java.awt.Color(10, 50, 255));
-            label.setForeground(new java.awt.Color(0, 0, 0));
-            label.setName("Rv");
-
-        } else if (biome.equals("Frr")) {
-
-            label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-            label.setBackground(new java.awt.Color(22, 44, 22));
-            label.setForeground(new java.awt.Color(255, 255, 255));
-            label.setText("Frr");
-            label.setName("Frr");
-
-        } else if (biome.equals("Capital")) {
-
-            label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-            label.setBackground(new java.awt.Color(255, 205, 44));
-            label.setForeground(new java.awt.Color(0, 0, 0));
-            label.setText("Ca");
-            label.setName("Ca");
-
-        } else if (biome.equals("City")) {
-
-            label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-            label.setBackground(new java.awt.Color(155, 105, 44));
-            label.setForeground(new java.awt.Color(0, 0, 0));
-            label.setText("Ct");
-            label.setName("Ct");
-
-        } else if (biome.equals("Town")) {
-
-            label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-            label.setBackground(new java.awt.Color(66, 44, 22));
-            label.setForeground(new java.awt.Color(0, 0, 0));
-            label.setText("Tw");
-            label.setName("Tw");
-
-        } else if (biome.equals("Village")) {
-
-            label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-            label.setBackground(new java.awt.Color(44, 22, 11));
-            label.setForeground(new java.awt.Color(0, 0, 0));
-            label.setText("Vl");
-            label.setName("Vl");
-
+        switch (biome) {
+            case "Oc":
+                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                label.setBackground(new java.awt.Color(0, 0, 100));
+                label.setForeground(new java.awt.Color(255, 255, 255));
+                label.setText("Oc");
+                label.setName("Oc");
+                break;
+            case "Sh":
+                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                label.setBackground(new java.awt.Color(0, 50, 205));
+                label.setForeground(new java.awt.Color(255, 255, 255));
+                label.setText("Sh");
+                label.setName("Shore");
+                break;
+            case "Be":
+                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                label.setBackground(new java.awt.Color(255, 255, 153));
+                label.setForeground(new java.awt.Color(0, 0, 0));
+                label.setText("Be");
+                label.setName("Beach");
+                break;
+            case "Pl":
+                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                label.setBackground(new java.awt.Color(22, 109, 22));
+                label.setForeground(new java.awt.Color(0, 0, 0));
+                label.setText("Pl");
+                label.setName("Plain");
+                break;
+            case "Mt":
+                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                label.setBackground(new java.awt.Color(20, 20, 26));
+                label.setForeground(new java.awt.Color(255, 255, 255));
+                label.setText("Mt");
+                label.setName("Mt");
+                break;
+            case "Ht":
+                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                label.setBackground(new java.awt.Color(40, 40, 46));
+                label.setForeground(new java.awt.Color(0, 0, 0));
+                label.setText("Ht");
+                label.setName("Hill");
+                break;
+            case "Lk":
+                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                label.setBackground(new java.awt.Color(15, 80, 245));
+                label.setForeground(new java.awt.Color(255, 255, 255));
+                label.setText("Lk");
+                label.setName("Lake");
+                break;
+            case "Rs":
+                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                label.setBackground(new java.awt.Color(10, 50, 205));
+                label.setForeground(new java.awt.Color(0, 0, 0));
+                label.setText("Rs");
+                label.setName("Rs");
+                break;
+            case "Rv":
+                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                label.setBackground(new java.awt.Color(10, 50, 255));
+                label.setForeground(new java.awt.Color(0, 0, 0));
+                label.setName("River");
+                break;
+            case "Fr":
+                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                label.setBackground(new java.awt.Color(22, 44, 22));
+                label.setForeground(new java.awt.Color(255, 255, 255));
+                label.setText("Fr");
+                label.setName("Forest");
+                break;
+            case "Frr":
+                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                label.setBackground(new java.awt.Color(22, 44, 22));
+                label.setForeground(new java.awt.Color(255, 255, 255));
+                label.setText("Frr");
+                label.setName("Frr");
+                break;
+            case "Capital":
+                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                label.setBackground(new java.awt.Color(255, 205, 44));
+                label.setForeground(new java.awt.Color(0, 0, 0));
+                label.setText("Ca");
+                label.setName("Capital");
+                break;
+            case "Ct":
+                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                label.setBackground(new java.awt.Color(155, 105, 44));
+                label.setForeground(new java.awt.Color(0, 0, 0));
+                label.setText("Ct");
+                label.setName("City");
+                break;
+            case "Tw":
+                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                label.setBackground(new java.awt.Color(66, 44, 22));
+                label.setForeground(new java.awt.Color(0, 0, 0));
+                label.setText("Tw");
+                label.setName("Town");
+                break;
+            case "Vl":
+                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                label.setBackground(new java.awt.Color(44, 22, 11));
+                label.setForeground(new java.awt.Color(0, 0, 0));
+                label.setText("Vl");
+                label.setName("Village");
+                break;
+            default:
+                break;
         }
 
         return label;
