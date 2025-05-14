@@ -1,0 +1,23 @@
+{
+    "current": [{
+            "tileScale": "25"
+        }, {
+            "mapsize": "1"
+        }, {
+            "population": "3.0"
+        }, {
+            "mountainSpawnRate": "3"
+        }, {
+            "lakeSpawnRate": "3"
+        }, {
+            "forestSpawnRate": "3"
+        }, {
+            "riverSources": "3"
+        }, {
+            "forestSources": "3"
+        }, {
+            "hillBranches": "3"
+        }, {
+            "forestBranches": "3"
+        }]
+}

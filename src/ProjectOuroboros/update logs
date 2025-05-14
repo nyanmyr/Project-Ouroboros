@@ -1,0 +1,72 @@
+ version 0.0.0 (prototype)
+ progress (4/27/2025)
+ • intro scene
+ • menu
+      - new game
+      - save game
+
+ version 0.0.1 (prototype)
+ progress (4/28/2025)
+ • intro scene
+ • world map
+      - tiles generator
+      - movement
+
+ version 0.0.2 (prototype)
+ progress (4/29/2025)
+ • zoom in and out
+ • worked on terrain generation
+
+ version 0.0.3 (prototype)
+ progress (4/30/2025)
+ • worked on failed river generation system
+
+ version 0.0.4 (prototype)
+ progress (5/1/2025)
+ • finished river generation system
+ • finished lake generation
+ • added ocean background tiles
+ • forest generation
+ • fix river mt generation bug (destroys mountains!)
+ • adjusted zoom
+
+ version 0.0.5 (prototype)
+ progress (5/2/2025)
+ • finished river and intersection direction
+ • added new menu background
+
+ version 0.0.6 (prototype)
+ progress (5/3/2025)
+ • worked on settlement generation
+
+ version 0.0.7 (prototype)
+ progress (5/5/2025)
+ • finished town generation
+ • fixed river scaling
+ • finished the settlement generation
+ • fixed bug of river sources generating adjacent to each other. (visual issue)
+ • finished the terrain generation (needs optimization)
+ • started work on optimizing terrain generation
+
+ version 0.0.8 (prototype)
+ progress (5/7/2025)
+ • worked on optimizing terrain generation
+ 
+ version 0.0.9 (prototype)
+ progress (5/8/2025)
+ • worked on settlement generation optimization
+ • worked on character creator demo
+
+version 0.0.10 (prototype)
+progress (5/9/2025)
+• finished optimization work on terrain generation
+• Started work on world creation menu
+
+version 0.0.11 (prototype)
+progress (5/12/2025)
+• working on terrain creation variables
+
+version 0.0.12 (prototype)
+progress (5/13/2025)
+• finished work on loading and saving terrain settings .json
+• town name generator (need rework)
