@@ -78,3 +78,7 @@ progress (5/14/2025)
 • changed the biome names to their full names
 • reworked settlement name generation: names will sometimes be based on biome
 • added tag tiles for settlements
+
+version 0.0.14 (prototype)
+progress (5/15/2025)
+• tweaked search for settlement names

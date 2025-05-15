@@ -59,7 +59,6 @@
 // • weather
 //
 // make:
-// • town name display
 // • town/ biome name hide key
 // • Optimize
 // • world save/ load system
@@ -71,6 +70,8 @@
 // - riverTileMap
 // • background tile >> image of background
 //
+// known bugs:
+// • names may possibly duplicate
 //
 package ProjectOuroboros;
 

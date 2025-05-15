@@ -1097,22 +1097,14 @@ public final class WorldCreation extends javax.swing.JFrame {
 
         int biomeIndex = 0;
         switch (biome) {
-            case "Beach":
-                biomeIndex = 0;
-                break;
-            case "Plain":
-                biomeIndex = 1;
-                break;
-            case "Hill":
-                biomeIndex = 2;
-                break;
-            case "Frr":
+            case "Beach" -> biomeIndex = 0;
+            case "Plain" -> biomeIndex = 1;
+            case "Hill" -> biomeIndex = 2;
+            case "Frr" -> {
                 biome = "Forest";
                 biomeIndex = 3;
-                break;
-            case "River":
-                biomeIndex = 4;
-                break;
+            }
+            case "River" -> biomeIndex = 4;
         }
 
         if (randomizer.nextInt(3) == 0) {
@@ -1146,7 +1138,6 @@ public final class WorldCreation extends javax.swing.JFrame {
         settlementTile.setText(generatedName);
         settlementTile.setName(generatedName);
         panel_Mainpanel.add(settlementTile);
-        settlementTile.setVisible(true);
         settlementsNameTileMap.put(tileCoordinates, settlementTile);
     }
 
@@ -1831,7 +1822,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                         try {
 
                             JLabel settlementNameTile = settlementsNameTileMap.get("x" + x + "y" + y);
-                            if (!settlementNameTile.getName().isEmpty()) {
+                            if (!settlementNameTile.getName().equals(("x" + x + "y" + y))) {
                                 settlementNameTile.setFont(new java.awt.Font("Segoe UI", 0, (int) (6 + (zoomScale * 4))));
                                 settlementNameTile.setBounds(((((int) (screenWidth * 0.5)) - (int) (zoomScale * tileScale) + (int) ((zoomScale * tileScale * 3) / 5))) + (int) (x * (zoomScale * tileScale)) - (int) (coordinatesX * (zoomScale * tileScale)) - (int) ((tileScale * ((zoomScale - 3) * -1)) / 20),
                                         ((((int) (screenHeight * 0.5)) - (int) (zoomScale * tileScale) + (int) ((zoomScale * tileScale * 4) / 7))) + (int) (y * (zoomScale * tileScale)) - (int) (coordinatesY * (zoomScale * tileScale)),
@@ -2264,7 +2255,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                 label.setText("Frr");
                 label.setName("Frr");
                 break;
-            case "Capital":
+            case "Ca":
                 label.setFont(new java.awt.Font("Segoe UI", 0, 24));
                 label.setBackground(new java.awt.Color(255, 205, 44));
                 label.setForeground(new java.awt.Color(0, 0, 0));
