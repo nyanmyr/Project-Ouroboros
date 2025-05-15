@@ -1,0 +1,70 @@
+
+ unique:
+      - replayability
+
+ classes:
+      - merchant, fighter, sorcerer, marksman
+ prowesses:
+      - financial, martial, sorcery, marksmanship
+
+
+
+ game play loop:
+      - start of phase
+      - grind/ completing quests to get money
+      - phase battle
+      - boss battle
+          - if (victorious) cycle/game ends, evil is defeated
+          - else if (retreated) next phase starts, evil grows stronger
+          - else (defeated) cycle/ game ends, evil wins.
+
+ turn loop (1 movement)
+      - hunger, thirst, energy is changed
+      - event: battle, encounter
+      - save progress
+
+
+ ideas:
+ • fog of war
+ • world creation menu
+ • weather map
+ • loading
+
+ features:
+ • start menu
+      - load world
+      - use world
+      - difficulty/ game settings menu
+      - character creation menu
+ • world creation screen
+      - Spawn locations: village, town, city, wilderness
+ • movement
+      - attrition
+      - speed
+ • map
+      - locations: secret locations, church of Dalia
+ • save (Jtable table)
+      - map
+      - location
+ • load
+ • battle
+      - random enemy generator
+ • party
+      - skills
+ • events
+ • points
+ • character interaction/ dialogue screen
+ • hunger/ thirst/ energy
+ • date/ time/ turn
+ • weather
+
+ make:
+ • Optimize
+ • background image
+ • world save/ load system
+
+ optimize:
+ • background tile >> image of background
+
+ known bugs:
+ • names may possibly duplicate

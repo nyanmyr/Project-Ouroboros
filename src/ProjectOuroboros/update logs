@@ -82,3 +82,6 @@ progress (5/14/2025)
 version 0.0.14 (prototype)
 progress (5/15/2025)
 • tweaked search for settlement names
+• town/ biome name hide key
+• working on saving worlds (encryption)
+• nearly finished optimization (background into image is W.I.P.)

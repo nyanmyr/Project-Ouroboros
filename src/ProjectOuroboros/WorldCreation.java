@@ -10,6 +10,9 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.util.Base64;
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -93,6 +96,16 @@ public final class WorldCreation extends javax.swing.JFrame {
     JSONArray settlementPrefixes = new JSONArray();
     JSONArray settlementSufixes = new JSONArray();
 
+    // used in encryption and decryption of worlds
+    private static final String ALGORITHM = "AES";
+    private static final String TRANSFORMATION = "AES";
+
+    // key to decrypt worlds
+    private static final String SECRET_KEY = "1234567890123456"; // 16-char key (NOT for production)
+
+    boolean showBiomeNames = true;
+    boolean showSettlementNames = true;
+
 //    </editor-fold>
     public WorldCreation() {
 
@@ -137,32 +150,23 @@ public final class WorldCreation extends javax.swing.JFrame {
         linebreak(1);
 
         // generates the background ocean layer
-        for (int y = -20; y <= yMax + 19; y++) {
-
-            for (int x = -20; x <= xMax + 19; x++) {
-
-                String tileCoordinates = "x" + x + "y" + y;
-
-                JLabel newTile = generateProtoTile(tileCoordinates);
-
-                selectBiome(newTile, "Oc");
-                tileMapAddition(newTile, tileCoordinates, backgroundTileMap);
-
-            }
-
-        }
-
+//        for (int y = -20; y <= yMax + 19; y++) {
+//
+//            for (int x = -20; x <= xMax + 19; x++) {
+//
+//                String tileCoordinates = "x" + x + "y" + y;
+//
+//                JLabel newTile = generateProtoTile(tileCoordinates);
+//
+//                selectBiome(newTile, "Oc");
+//                tileMapAddition(newTile, tileCoordinates, backgroundTileMap);
+//
+//            }
+//
+//        }
         // -----------------------------------------------------------------------------------------------------------
         while (true) {
 
-//         Prints out all the key/ value pairs in the tileMap Hashmap.
-//         Use for debugging
-//            for (String key : tileMap.keySet()) {
-//
-//                JLabel label = tileMap.get(key);
-//                System.out.println("Key: " + key + ", Value: " + label.getName());
-//
-//            }
             int riverSourcesGenerated = 0;
             int riversGenerated = 0;
             int forestsGenerated = 0;
@@ -584,7 +588,7 @@ public final class WorldCreation extends javax.swing.JFrame {
 //                                                System.out.println("currentTile: " + currentcurrentRiverTile.getName());
                                                 switch (currentcurrentRiverTile.getName()) {
                                                     case "Hill":
-                                                    case "Mountain":
+                                                    case "Mt":
 //                                                        System.out.println("Mountain destroyed!");
                                                         currentcurrentRiverTile = generateProtoTile(riverTileCoordinates);
                                                         selectBiome(currentcurrentRiverTile, "Pl");
@@ -982,6 +986,8 @@ public final class WorldCreation extends javax.swing.JFrame {
         panel_Mainpanel.revalidate();
         panel_Mainpanel.repaint();
 
+        System.out.println("backgroundTileMap: " + backgroundTileMap.size());
+
         // changes the placeholder biome "Frr" to Fr
         for (String key : tileMap.keySet()) {
 
@@ -1049,6 +1055,7 @@ public final class WorldCreation extends javax.swing.JFrame {
         panel_Mainpanel.setComponentZOrder(label_SettlementType, 0);
         panel_Mainpanel.setComponentZOrder(label_SettlementName, 0);
         panel_Mainpanel.setComponentZOrder(button_Generate, 0);
+        panel_Mainpanel.setComponentZOrder(button_Save, 0);
 
         panel_Mainpanel.setComponentZOrder(label_TileScale, 0);
         panel_Mainpanel.setComponentZOrder(slider_TileScale, 0);
@@ -1097,14 +1104,18 @@ public final class WorldCreation extends javax.swing.JFrame {
 
         int biomeIndex = 0;
         switch (biome) {
-            case "Beach" -> biomeIndex = 0;
-            case "Plain" -> biomeIndex = 1;
-            case "Hill" -> biomeIndex = 2;
+            case "Beach" ->
+                biomeIndex = 0;
+            case "Plain" ->
+                biomeIndex = 1;
+            case "Hill" ->
+                biomeIndex = 2;
             case "Frr" -> {
                 biome = "Forest";
                 biomeIndex = 3;
             }
-            case "River" -> biomeIndex = 4;
+            case "River" ->
+                biomeIndex = 4;
         }
 
         if (randomizer.nextInt(3) == 0) {
@@ -1224,6 +1235,7 @@ public final class WorldCreation extends javax.swing.JFrame {
         slider_TileScale = new javax.swing.JSlider();
         button_Save = new javax.swing.JButton();
         button_Generate = new javax.swing.JButton();
+        label_BackgroundTiles = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1280, 720));
@@ -1576,6 +1588,16 @@ public final class WorldCreation extends javax.swing.JFrame {
         panel_Mainpanel.add(button_Generate);
         button_Generate.setBounds(30, 370, 77, 23);
 
+        label_BackgroundTiles.setForeground(new java.awt.Color(0, 0, 0));
+        label_BackgroundTiles.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        label_BackgroundTiles.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectOuroboros/Images/Sprites/Ocean/Ocean_Text.jpeg"))); // NOI18N
+        label_BackgroundTiles.setText("Player");
+        label_BackgroundTiles.setToolTipText(null);
+        label_BackgroundTiles.setFocusable(false);
+        label_BackgroundTiles.setPreferredSize(new java.awt.Dimension(4800, 4800));
+        panel_Mainpanel.add(label_BackgroundTiles);
+        label_BackgroundTiles.setBounds(0, 0, 4800, 4800);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -1704,9 +1726,22 @@ public final class WorldCreation extends javax.swing.JFrame {
                 (int) (screenHeight - 75),
                 300, 50);
 
+        button_Save.setBounds((int) (screenWidth - 325),
+                (int) (screenHeight - 150),
+                300, 50);
+
         label_Player.setBounds((int) (screenWidth * 0.5) - ((int) (zoomScale * tileScale) / 2),
                 (int) (screenHeight * 0.5) - ((int) (zoomScale * tileScale) / 2),
                 (int) (zoomScale * tileScale), (int) (zoomScale * tileScale));
+
+//        .setBounds(((((int) (screenWidth * 0.5)) - (int) (zoomScale * tileScale) + (int) (zoomScale * (tileScale / 2)))) + (int) (x * (zoomScale * tileScale)) - (int) (coordinatesX * (zoomScale * tileScale)),
+//                                ((((int) (screenHeight * 0.5)) - (int) (zoomScale * tileScale) + (int) (zoomScale * (tileScale / 2)))) + (int) (y * (zoomScale * tileScale)) - (int) (coordinatesY * (zoomScale * tileScale)),
+//                                (int) (zoomScale * tileScale), (int) (zoomScale * tileScale));
+        
+        // WIP
+label_BackgroundTiles.setBounds(0 + (coordinatesX * 75),
+                0 + (int) (75 * (zoomScale * tileScale)),
+                label_BackgroundTiles.getWidth(), label_BackgroundTiles.getHeight());
 
         // adjusts the positions of the tiles
         if (loaded) {
@@ -1730,16 +1765,20 @@ public final class WorldCreation extends javax.swing.JFrame {
             }
 //      </editor-fold>
 
-            // deals with the background tiles
-            for (int y = -20; y <= yMax + 19; y++) {
+            if (!backgroundTileMap.isEmpty()) {
 
-                for (int x = -20; x <= xMax + 19; x++) {
+                // deals with the background tiles
+                for (int y = -20; y <= yMax + 19; y++) {
 
-                    JLabel backgroundTile = backgroundTileMap.get("x" + x + "y" + y);
+                    for (int x = -20; x <= xMax + 19; x++) {
 
-                    backgroundTile.setBounds(((((int) (screenWidth * 0.5)) - (int) (zoomScale * tileScale) + (int) (zoomScale * (tileScale / 2)))) + (int) (x * (zoomScale * tileScale)) - (int) (coordinatesX * (zoomScale * tileScale)),
-                            ((((int) (screenHeight * 0.5)) - (int) (zoomScale * tileScale) + (int) (zoomScale * (tileScale / 2)))) + (int) (y * (zoomScale * tileScale)) - (int) (coordinatesY * (zoomScale * tileScale)),
-                            (int) (zoomScale * tileScale), (int) (zoomScale * tileScale));
+                        JLabel backgroundTile = backgroundTileMap.get("x" + x + "y" + y);
+
+                        backgroundTile.setBounds(((((int) (screenWidth * 0.5)) - (int) (zoomScale * tileScale) + (int) (zoomScale * (tileScale / 2)))) + (int) (x * (zoomScale * tileScale)) - (int) (coordinatesX * (zoomScale * tileScale)),
+                                ((((int) (screenHeight * 0.5)) - (int) (zoomScale * tileScale) + (int) (zoomScale * (tileScale / 2)))) + (int) (y * (zoomScale * tileScale)) - (int) (coordinatesY * (zoomScale * tileScale)),
+                                (int) (zoomScale * tileScale), (int) (zoomScale * tileScale));
+
+                    }
 
                 }
 
@@ -1751,8 +1790,38 @@ public final class WorldCreation extends javax.swing.JFrame {
 
                     for (int x = 1; x <= xMax; x++) {
 
+                        String coordinates = "x" + x + "y" + y;
+
                         //              <editor-fold desc="deals with the biome tiles">
-                        JLabel tile = tileMap.get("x" + x + "y" + y);
+                        JLabel tile = tileMap.get(coordinates);
+
+                        if (showBiomeNames) {
+                            switch (tile.getName()) {
+                                case "Beach":
+                                    tile.setText("Be");
+                                    break;
+                                case "Shore":
+                                    tile.setText("Sh");
+                                    break;
+                                case "Plain":
+                                    tile.setText("Pl");
+                                    break;
+                                case "Forest":
+                                    tile.setText("Fr");
+                                    break;
+                                case "Mt":
+                                    tile.setText("Mt");
+                                    break;
+                                case "Hill":
+                                    tile.setText("Ht");
+                                    break;
+                                case "Lake":
+                                    tile.setText("Lk");
+                                    break;
+                            }
+                        } else {
+                            tile.setText("");
+                        }
 
                         tile.setBounds(((((int) (screenWidth * 0.5)) - (int) (zoomScale * tileScale) + (int) (zoomScale * (tileScale / 2)))) + (int) (x * (zoomScale * tileScale)) - (int) (coordinatesX * (zoomScale * tileScale)),
                                 ((((int) (screenHeight * 0.5)) - (int) (zoomScale * tileScale) + (int) (zoomScale * (tileScale / 2)))) + (int) (y * (zoomScale * tileScale)) - (int) (coordinatesY * (zoomScale * tileScale)),
@@ -1762,7 +1831,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                         //              <editor-fold desc="deals with the river tiles">
                         try {
 
-                            JLabel riverTile = riverTileMap.get(("x" + x + "y" + y));
+                            JLabel riverTile = riverTileMap.get(coordinates);
 
                             if (riverTile.getName().equals("River")) {
                                 //                            System.out.println("River Source Found: " + ("x" + x + "y" + y));
@@ -1799,12 +1868,31 @@ public final class WorldCreation extends javax.swing.JFrame {
                         //              <editor-fold desc="deals with the settlements tiles">
                         try {
 
-                            JLabel settlementTile = settlementsTileMap.get("x" + x + "y" + y);
+                            JLabel settlementTile = settlementsTileMap.get(coordinates);
 
                             if (settlementTile.getName().equals("Capital")
                                     || settlementTile.getName().equals("City")
                                     || settlementTile.getName().equals("Town")
                                     || settlementTile.getName().equals("Village")) {
+
+                                if (showBiomeNames) {
+                                    switch (settlementTile.getName()) {
+                                        case "Village":
+                                            settlementTile.setText("Vl");
+                                            break;
+                                        case "Town":
+                                            settlementTile.setText("Tw");
+                                            break;
+                                        case "City":
+                                            settlementTile.setText("Ct");
+                                            break;
+                                        case "Capital":
+                                            settlementTile.setText("Ca");
+                                            break;
+                                    }
+                                } else {
+                                    settlementTile.setText("");
+                                }
 
                                 //                        System.out.println("Found: " + ("x" + x + "y" + y));w
                                 settlementTile.setBounds(((((int) (screenWidth * 0.5)) - (int) (zoomScale * tileScale) + (int) ((zoomScale * tileScale * 3) / 4))) + (int) (x * (zoomScale * tileScale)) - (int) (coordinatesX * (zoomScale * tileScale)),
@@ -1821,9 +1909,17 @@ public final class WorldCreation extends javax.swing.JFrame {
                         //              <editor-fold desc="deals with the settlement names tiles">
                         try {
 
-                            JLabel settlementNameTile = settlementsNameTileMap.get("x" + x + "y" + y);
-                            if (!settlementNameTile.getName().equals(("x" + x + "y" + y))) {
-                                settlementNameTile.setFont(new java.awt.Font("Segoe UI", 0, (int) (6 + (zoomScale * 4))));
+                            JLabel settlementNameTile = settlementsNameTileMap.get(coordinates);
+                            if (!settlementsTileMap.get(coordinates).getName().isEmpty()) {
+
+                                if (showSettlementNames) {
+                                    settlementNameTile.setVisible(true);
+                                } else {
+                                    settlementNameTile.setVisible(false);
+                                }
+                                if (zoomScale != 1.0 && zoomScale != zoomScaleMax) {
+                                    settlementNameTile.setFont(new java.awt.Font("Segoe UI", 0, (int) (6 + (zoomScale * 4))));
+                                }
                                 settlementNameTile.setBounds(((((int) (screenWidth * 0.5)) - (int) (zoomScale * tileScale) + (int) ((zoomScale * tileScale * 3) / 5))) + (int) (x * (zoomScale * tileScale)) - (int) (coordinatesX * (zoomScale * tileScale)) - (int) ((tileScale * ((zoomScale - 3) * -1)) / 20),
                                         ((((int) (screenHeight * 0.5)) - (int) (zoomScale * tileScale) + (int) ((zoomScale * tileScale * 4) / 7))) + (int) (y * (zoomScale * tileScale)) - (int) (coordinatesY * (zoomScale * tileScale)),
                                         (int) (zoomScale * (tileScale / 1.25)) + (int) ((tileScale * ((zoomScale - 3) * -1)) / 10), (int) (zoomScale * (tileScale / 5)));
@@ -1837,6 +1933,10 @@ public final class WorldCreation extends javax.swing.JFrame {
                     }
 
                 }
+
+                panel_Mainpanel.revalidate();
+                panel_Mainpanel.repaint();
+
             }
 
         }
@@ -1889,6 +1989,12 @@ public final class WorldCreation extends javax.swing.JFrame {
                 case KeyEvent.VK_MINUS:
                     zoomScale -= (1 * zoomScaleSensitivity);
                     break;
+                case KeyEvent.VK_H:
+                    showBiomeNames = !showBiomeNames;
+                    break;
+                case KeyEvent.VK_J:
+                    showSettlementNames = !showSettlementNames;
+                    break;
 
             }
 
@@ -1910,6 +2016,8 @@ public final class WorldCreation extends javax.swing.JFrame {
                 zoomScale = 1;
             }
         }
+
+        updateDashboard();
     }
 
 // This method implements the zoom in/ out feature
@@ -1934,6 +2042,69 @@ public final class WorldCreation extends javax.swing.JFrame {
 
     private void button_SaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_SaveActionPerformed
 
+        // W.I.P.
+        try {
+            String encryptedTileMap = encrypt(tileMap.toString(), SECRET_KEY);
+            System.out.println("encryptedTileMap: " + encryptedTileMap);
+        } catch (Exception e) {
+
+        }
+
+//        try (FileWriter writer = new FileWriter(worldSettingsFilepath)) {
+//
+//            System.out.println("[Saving World]");
+//
+//            JSONObject saveCurrent = new JSONObject();
+//            saveCurrent.put("current", worldSettings);
+//            JSONArray saveCurrentArray = (JSONArray) saveCurrent.get("current");
+//
+//            JSONObject saveTileScale = new JSONObject();
+//            saveTileScale.put("tileScale", Integer.toString(slider_TileScale.getValue()));
+//            saveCurrentArray.add(0, saveTileScale);
+//
+//            JSONObject saveMapSize = new JSONObject();
+//            saveMapSize.put("mapsize", Integer.toString(slider_MapSize.getValue()));
+//            saveCurrentArray.add(1, saveMapSize);
+//
+//            JSONObject savePopulation = new JSONObject();
+//            savePopulation.put("population", Float.toString(slider_Population.getValue()));
+//            saveCurrentArray.add(2, savePopulation);
+//
+//            JSONObject saveMountainSpawnRate = new JSONObject();
+//            saveMountainSpawnRate.put("mountainSpawnRate", Integer.toString(slider_MountainSpawnRate.getValue()));
+//            saveCurrentArray.add(3, saveMountainSpawnRate);
+//
+//            JSONObject saveLakeSpawnRate = new JSONObject();
+//            saveLakeSpawnRate.put("lakeSpawnRate", Integer.toString(slider_LakeSpawnRate.getValue()));
+//            saveCurrentArray.add(4, saveLakeSpawnRate);
+//
+//            JSONObject saveForestSpawnRate = new JSONObject();
+//            saveForestSpawnRate.put("forestSpawnRate", Integer.toString(slider_ForestSpawnRate.getValue()));
+//            saveCurrentArray.add(5, saveForestSpawnRate);
+//
+//            JSONObject saveRiverSources = new JSONObject();
+//            saveRiverSources.put("riverSources", Integer.toString(slider_RiverSources.getValue()));
+//            saveCurrentArray.add(6, saveRiverSources);
+//
+//            JSONObject saveForestSources = new JSONObject();
+//            saveForestSources.put("forestSources", Integer.toString(slider_ForestSources.getValue()));
+//            saveCurrentArray.add(7, saveForestSources);
+//
+//            JSONObject saveHillBranches = new JSONObject();
+//            saveHillBranches.put("hillBranches", Integer.toString(slider_HillBranches.getValue()));
+//            saveCurrentArray.add(8, saveHillBranches);
+//
+//            JSONObject saveForestBranches = new JSONObject();
+//            saveForestBranches.put("forestBranches", Integer.toString(slider_ForestBranches.getValue()));
+//            saveCurrentArray.add(9, saveForestBranches);
+//
+//            saveCurrent.put("current", saveCurrentArray);
+//            writer.write(saveCurrent.toJSONString());
+//
+//        } catch (Exception e) {
+//
+//        }
+        linebreak(2);
 
     }//GEN-LAST:event_button_SaveActionPerformed
 
@@ -2121,6 +2292,7 @@ public final class WorldCreation extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton button_Generate;
     private javax.swing.JButton button_Save;
+    private javax.swing.JLabel label_BackgroundTiles;
     private javax.swing.JLabel label_Biome;
     private javax.swing.JLabel label_Coordinates;
     private javax.swing.JLabel label_ForestBranches;
@@ -2291,6 +2463,24 @@ public final class WorldCreation extends javax.swing.JFrame {
 
     }
 // </editor-fold>
+
+    //    <editor-fold desc="decryption and encryption">
+    public static String encrypt(String data, String key) throws Exception {
+        Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+        SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(), ALGORITHM);
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+        byte[] encryptedBytes = cipher.doFinal(data.getBytes());
+        return Base64.getEncoder().encodeToString(encryptedBytes);
+    }
+
+    public static String decrypt(String encryptedData, String key) throws Exception {
+        Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+        SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(), ALGORITHM);
+        cipher.init(Cipher.DECRYPT_MODE, secretKey);
+        byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
+        return new String(decryptedBytes);
+    }
+//    </editor-fold>
 
     public static void linebreak(int type) {
 
