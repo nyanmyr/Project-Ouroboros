@@ -59,12 +59,10 @@
  • weather
 
  make:
- • Optimize
- • background image
  • world save/ load system
 
  optimize:
- • background tile >> image of background
+ • background tile >> image of background (scrapped: too unoptimized)
 
  known bugs:
  • names may possibly duplicate

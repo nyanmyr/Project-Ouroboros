@@ -150,20 +150,20 @@ public final class WorldCreation extends javax.swing.JFrame {
         linebreak(1);
 
         // generates the background ocean layer
-//        for (int y = -20; y <= yMax + 19; y++) {
-//
-//            for (int x = -20; x <= xMax + 19; x++) {
-//
-//                String tileCoordinates = "x" + x + "y" + y;
-//
-//                JLabel newTile = generateProtoTile(tileCoordinates);
-//
-//                selectBiome(newTile, "Oc");
-//                tileMapAddition(newTile, tileCoordinates, backgroundTileMap);
-//
-//            }
-//
-//        }
+        for (int y = -12; y <= yMax + 11; y++) {
+
+            for (int x = -12; x <= xMax + 11; x++) {
+
+                String tileCoordinates = "x" + x + "y" + y;
+
+                JLabel newTile = generateProtoTile(tileCoordinates);
+
+                selectBiome(newTile, "Oc");
+                tileMapAddition(newTile, tileCoordinates, backgroundTileMap);
+
+            }
+
+        }
         // -----------------------------------------------------------------------------------------------------------
         while (true) {
 
@@ -1082,6 +1082,8 @@ public final class WorldCreation extends javax.swing.JFrame {
         panel_Mainpanel.requestFocusInWindow();
         // </editor-fold>
 
+        label_BackgroundTiles.setVisible(false);
+
     }
 
     // might want to work a system to make prefixes more accurate
@@ -1093,58 +1095,75 @@ public final class WorldCreation extends javax.swing.JFrame {
         JSONArray sufixArray;
         JSONObject sufixObj;
 
-        String biome = tileMap.get(tileCoordinates).getName();
-        try {
-            if (riverTileMap.get(tileCoordinates).getName().equals("River")) {
-                biome = riverTileMap.get(tileCoordinates).getName();
+        String generatedName = "";
+        boolean isGeneratedName = false;
+
+        while (!isGeneratedName) {
+
+            String biome = tileMap.get(tileCoordinates).getName();
+            try {
+                if (riverTileMap.get(tileCoordinates).getName().equals("River")) {
+                    biome = riverTileMap.get(tileCoordinates).getName();
+                }
+            } catch (Exception e) {
+
             }
-        } catch (Exception e) {
 
-        }
-
-        int biomeIndex = 0;
-        switch (biome) {
-            case "Beach" ->
-                biomeIndex = 0;
-            case "Plain" ->
-                biomeIndex = 1;
-            case "Hill" ->
-                biomeIndex = 2;
-            case "Frr" -> {
-                biome = "Forest";
-                biomeIndex = 3;
+            int biomeIndex = 0;
+            switch (biome) {
+                case "Beach" ->
+                    biomeIndex = 0;
+                case "Plain" ->
+                    biomeIndex = 1;
+                case "Hill" ->
+                    biomeIndex = 2;
+                case "Frr" -> {
+                    biome = "Forest";
+                    biomeIndex = 3;
+                }
+                case "River" ->
+                    biomeIndex = 4;
             }
-            case "River" ->
-                biomeIndex = 4;
-        }
 
-        if (randomizer.nextInt(3) == 0) {
+            if (randomizer.nextInt(3) == 0) {
 
-            biomeObj = (JSONObject) settlementPrefixes.get(biomeIndex);
-            prefixArray = (JSONArray) biomeObj.get(biome);
-            prefixObj = (JSONObject) prefixArray.get((int) (Math.random() * ((prefixArray.size() - 1) - 0 + 1)) + 0);
+                biomeObj = (JSONObject) settlementPrefixes.get(biomeIndex);
+                prefixArray = (JSONArray) biomeObj.get(biome);
+                prefixObj = (JSONObject) prefixArray.get((int) (Math.random() * ((prefixArray.size() - 1) - 0 + 1)) + 0);
 
-            biomeObj = (JSONObject) settlementSufixes.get(5);
-            sufixArray = (JSONArray) biomeObj.get("Generic");
-            sufixObj = (JSONObject) sufixArray.get((int) (Math.random() * ((sufixArray.size() - 1) - 0 + 1)) + 0);
+                biomeObj = (JSONObject) settlementSufixes.get(5);
+                sufixArray = (JSONArray) biomeObj.get("Generic");
+                sufixObj = (JSONObject) sufixArray.get((int) (Math.random() * ((sufixArray.size() - 1) - 0 + 1)) + 0);
 
-        } else {
+            } else {
 
-            biomeObj = (JSONObject) settlementPrefixes.get(5);
-            prefixArray = (JSONArray) biomeObj.get("Generic");
-            prefixObj = (JSONObject) prefixArray.get((int) (Math.random() * ((prefixArray.size() - 1) - 0 + 1)) + 0);
+                biomeObj = (JSONObject) settlementPrefixes.get(5);
+                prefixArray = (JSONArray) biomeObj.get("Generic");
+                prefixObj = (JSONObject) prefixArray.get((int) (Math.random() * ((prefixArray.size() - 1) - 0 + 1)) + 0);
 
-            biomeObj = (JSONObject) settlementSufixes.get(biomeIndex);
-            sufixArray = (JSONArray) biomeObj.get(biome);
-            sufixObj = (JSONObject) sufixArray.get((int) (Math.random() * ((sufixArray.size() - 1) - 0 + 1)) + 0);
+                biomeObj = (JSONObject) settlementSufixes.get(biomeIndex);
+                sufixArray = (JSONArray) biomeObj.get(biome);
+                sufixObj = (JSONObject) sufixArray.get((int) (Math.random() * ((sufixArray.size() - 1) - 0 + 1)) + 0);
 
-        }
+            }
 
 //        System.out.println("prefixObj: " + prefixObj);
 //        System.out.println("sufixObj: " + sufixObj);
 //        System.out.println();
-        String generatedName = prefixObj.get("").toString();
-        generatedName = generatedName.concat(sufixObj.get("").toString());
+            generatedName = prefixObj.get("").toString();
+            generatedName = generatedName.concat(sufixObj.get("").toString());
+
+            isGeneratedName = true;
+            for (String coordinate : settlementsNameTileMap.keySet()) {
+
+                if (settlementsNameTileMap.get(coordinate).getName().equals(generatedName)) {
+                    isGeneratedName = false;
+                }
+
+            }
+
+        }
+
         JLabel settlementTile = generateProtoTile(tileCoordinates);
         settlementTile.setText(generatedName);
         settlementTile.setName(generatedName);
@@ -1737,12 +1756,10 @@ public final class WorldCreation extends javax.swing.JFrame {
 //        .setBounds(((((int) (screenWidth * 0.5)) - (int) (zoomScale * tileScale) + (int) (zoomScale * (tileScale / 2)))) + (int) (x * (zoomScale * tileScale)) - (int) (coordinatesX * (zoomScale * tileScale)),
 //                                ((((int) (screenHeight * 0.5)) - (int) (zoomScale * tileScale) + (int) (zoomScale * (tileScale / 2)))) + (int) (y * (zoomScale * tileScale)) - (int) (coordinatesY * (zoomScale * tileScale)),
 //                                (int) (zoomScale * tileScale), (int) (zoomScale * tileScale));
-        
-        // WIP
-label_BackgroundTiles.setBounds(0 + (coordinatesX * 75),
-                0 + (int) (75 * (zoomScale * tileScale)),
-                label_BackgroundTiles.getWidth(), label_BackgroundTiles.getHeight());
-
+        // SCRAPPED
+//        label_BackgroundTiles.setBounds(0 + (coordinatesX * 75),
+//                0 + (int) (75 * (zoomScale * tileScale)),
+//                label_BackgroundTiles.getWidth(), label_BackgroundTiles.getHeight());
         // adjusts the positions of the tiles
         if (loaded) {
 
@@ -1768,9 +1785,9 @@ label_BackgroundTiles.setBounds(0 + (coordinatesX * 75),
             if (!backgroundTileMap.isEmpty()) {
 
                 // deals with the background tiles
-                for (int y = -20; y <= yMax + 19; y++) {
+                for (int y = -12; y <= yMax + 11; y++) {
 
-                    for (int x = -20; x <= xMax + 19; x++) {
+                    for (int x = -12; x <= xMax + 11; x++) {
 
                         JLabel backgroundTile = backgroundTileMap.get("x" + x + "y" + y);
 
@@ -2042,13 +2059,15 @@ label_BackgroundTiles.setBounds(0 + (coordinatesX * 75),
 
     private void button_SaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_SaveActionPerformed
 
+        System.out.println("tileMapFile: " + tileMap.toString());
+        
         // W.I.P.
-        try {
-            String encryptedTileMap = encrypt(tileMap.toString(), SECRET_KEY);
-            System.out.println("encryptedTileMap: " + encryptedTileMap);
-        } catch (Exception e) {
-
-        }
+//        try {
+//            String encryptedTileMap = encrypt(tileMap.toString(), SECRET_KEY);
+//            System.out.println("encryptedTileMap: " + encryptedTileMap);
+//        } catch (Exception e) {
+//
+//        }
 
 //        try (FileWriter writer = new FileWriter(worldSettingsFilepath)) {
 //
