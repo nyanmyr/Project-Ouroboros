@@ -10,9 +10,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.util.Base64;
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -96,15 +93,16 @@ public final class WorldCreation extends javax.swing.JFrame {
     JSONArray settlementPrefixes = new JSONArray();
     JSONArray settlementSufixes = new JSONArray();
 
-    // used in encryption and decryption of worlds
-    private static final String ALGORITHM = "AES";
-    private static final String TRANSFORMATION = "AES";
-
-    // key to decrypt worlds
-    private static final String SECRET_KEY = "1234567890123456"; // 16-char key (NOT for production)
-
     boolean showBiomeNames = true;
     boolean showSettlementNames = true;
+
+    String[] directionsSpritesFilePath = {
+        "/ProjectOuroboros/Images/Sprites/Rivers/ne_en.png",
+        "/ProjectOuroboros/Images/Sprites/Rivers/ns_sn.png",
+        "/ProjectOuroboros/Images/Sprites/Rivers/nw_wn.png",
+        "/ProjectOuroboros/Images/Sprites/Rivers/se_es.png",
+        "/ProjectOuroboros/Images/Sprites/Rivers/sw_ws.png",
+        "/ProjectOuroboros/Images/Sprites/Rivers/we_ew.png"};
 
 //    </editor-fold>
     public WorldCreation() {
@@ -122,8 +120,19 @@ public final class WorldCreation extends javax.swing.JFrame {
         loadSettlementNames();
         GenerateWorld();
         updateDashboard();
-//        System.out.println("Size: " + panel_Mainpanel.getComponents().length); check the size of the mainpanel
 
+        //        <editor-fold desc="rescales the river sprites">
+        for (String str : directionsSpritesFilePath) {
+
+            Icon icon = new javax.swing.ImageIcon(getClass().getResource(str));
+            ImageIcon ii = (ImageIcon) icon;
+            Image image = (ii).getImage().getScaledInstance((int) (zoomScale * 125), (int) (zoomScale * 125), Image.SCALE_FAST);
+            scaledSprites.put(str, image);
+
+        }
+        //      </editor-fold>
+
+//        System.out.println("Size: " + panel_Mainpanel.getComponents().length); check the size of the mainpanel
     }
 
     public void GenerateWorld() {
@@ -150,9 +159,9 @@ public final class WorldCreation extends javax.swing.JFrame {
         linebreak(1);
 
         // generates the background ocean layer
-        for (int y = -12; y <= yMax + 11; y++) {
+        for (int y = -12; y <= yMax + 12; y++) {
 
-            for (int x = -12; x <= xMax + 11; x++) {
+            for (int x = -12; x <= xMax + 12; x++) {
 
                 String tileCoordinates = "x" + x + "y" + y;
 
@@ -982,71 +991,77 @@ public final class WorldCreation extends javax.swing.JFrame {
 
         }
 
-        loaded = true;
-        panel_Mainpanel.revalidate();
-        panel_Mainpanel.repaint();
-
-        System.out.println("backgroundTileMap: " + backgroundTileMap.size());
-
         // changes the placeholder biome "Frr" to Fr
-        for (String key : tileMap.keySet()) {
+        // and also fixes the order of the tile, river, settlement, settlement names tile map
+        for (int y = 1; y <= yMax; y++) {
 
-            JLabel tile = tileMap.get(key);
-            if (tile.getName().equals("Frr")) {
-                selectBiome(tile, "Fr");
+            for (int x = 1; x <= xMax; x++) {
+
+                String tileCoordinates = "x" + x + "y" + y;
+                JLabel tile = tileMap.get(tileCoordinates);
+                if (tile.getName().equals("Frr")) {
+                    selectBiome(tile, "Fr");
+                }
+
+                // reorders the rivertiles
+                try {
+
+                    JLabel riverTile = riverTileMap.get(tileCoordinates);
+                    if (riverTile.getName().equals("River")) {
+                        riverTile.setBorder(null);
+                        riverTile.setText("");
+                        riverTile.setOpaque(false);
+                        panel_Mainpanel.setComponentZOrder(riverTile, 0);
+                    }
+
+                } catch (Exception e) {
+
+                }
+
+                try {
+
+                    JLabel riverTile = riverTileMap.get(tileCoordinates);
+                    if (riverTile.getName().equals("River")) {
+                        riverTile.setBorder(null);
+                        riverTile.setText("");
+                        riverTile.setOpaque(false);
+                        panel_Mainpanel.setComponentZOrder(riverTile, 0);
+                    }
+
+                } catch (Exception e) {
+
+                }
+
+                try {
+
+                    JLabel settlementTile = settlementsTileMap.get(tileCoordinates);
+                    if (settlementTile.getName().equals("Capital")
+                            || settlementTile.getName().equals("City")
+                            || settlementTile.getName().equals("Town")
+                            || settlementTile.getName().equals("Village")) {
+                        panel_Mainpanel.setComponentZOrder(settlementTile, 0);
+                    }
+
+                } catch (Exception e) {
+
+                }
+
+                try {
+
+                    JLabel settlementNameTile = settlementsNameTileMap.get(tileCoordinates);
+                    if (!settlementNameTile.getName().isEmpty()) {
+                        panel_Mainpanel.setComponentZOrder(settlementNameTile, 0);
+                    }
+
+                } catch (Exception e) {
+
+                }
+
             }
 
         }
 
         // <editor-fold desc="adjusts component z order and window focus">
-        // Puts the rivertiles in a higher order
-        for (String key : riverTileMap.keySet()) {
-
-            JLabel riverTile = riverTileMap.get(key);
-            if (riverTile.getName().equals("River")) {
-                riverTile.setBorder(null);
-                riverTile.setText("");
-                riverTile.setOpaque(false);
-                panel_Mainpanel.setComponentZOrder(riverTile, 0);
-            }
-
-        }
-
-        // Puts the rivertiles in a higher order
-        for (String key : settlementsTileMap.keySet()) {
-
-            JLabel settlementTile = settlementsTileMap.get(key);
-            try {
-
-                if (settlementTile.getName().equals("Capital")
-                        || settlementTile.getName().equals("City")
-                        || settlementTile.getName().equals("Town")
-                        || settlementTile.getName().equals("Village")) {
-                    panel_Mainpanel.setComponentZOrder(settlementTile, 0);
-                }
-
-            } catch (Exception e) {
-
-            }
-
-        }
-
-        // Puts the rivertiles in a higher order
-        for (String key : settlementsNameTileMap.keySet()) {
-
-            JLabel settlementNameTile = settlementsNameTileMap.get(key);
-            try {
-
-                if (!settlementNameTile.getName().isEmpty()) {
-                    panel_Mainpanel.setComponentZOrder(settlementNameTile, 0);
-                }
-
-            } catch (Exception e) {
-
-            }
-
-        }
-
         panel_Mainpanel.setComponentZOrder(label_Player, 0);
         panel_Mainpanel.setComponentZOrder(label_ZoomScale, 0);
         panel_Mainpanel.setComponentZOrder(label_Coordinates, 0);
@@ -1082,7 +1097,9 @@ public final class WorldCreation extends javax.swing.JFrame {
         panel_Mainpanel.requestFocusInWindow();
         // </editor-fold>
 
-        label_BackgroundTiles.setVisible(false);
+        loaded = true;
+        panel_Mainpanel.revalidate();
+        panel_Mainpanel.repaint();
 
     }
 
@@ -1254,7 +1271,6 @@ public final class WorldCreation extends javax.swing.JFrame {
         slider_TileScale = new javax.swing.JSlider();
         button_Save = new javax.swing.JButton();
         button_Generate = new javax.swing.JButton();
-        label_BackgroundTiles = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1280, 720));
@@ -1607,16 +1623,6 @@ public final class WorldCreation extends javax.swing.JFrame {
         panel_Mainpanel.add(button_Generate);
         button_Generate.setBounds(30, 370, 77, 23);
 
-        label_BackgroundTiles.setForeground(new java.awt.Color(0, 0, 0));
-        label_BackgroundTiles.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        label_BackgroundTiles.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectOuroboros/Images/Sprites/Ocean/Ocean_Text.jpeg"))); // NOI18N
-        label_BackgroundTiles.setText("Player");
-        label_BackgroundTiles.setToolTipText(null);
-        label_BackgroundTiles.setFocusable(false);
-        label_BackgroundTiles.setPreferredSize(new java.awt.Dimension(4800, 4800));
-        panel_Mainpanel.add(label_BackgroundTiles);
-        label_BackgroundTiles.setBounds(0, 0, 4800, 4800);
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -1763,31 +1769,12 @@ public final class WorldCreation extends javax.swing.JFrame {
         // adjusts the positions of the tiles
         if (loaded) {
 
-            //        <editor-fold desc="rescales the river sprites">
-            String[] directionsSpritesFilePath = {
-                "/ProjectOuroboros/Images/Sprites/Rivers/ne_en.png",
-                "/ProjectOuroboros/Images/Sprites/Rivers/ns_sn.png",
-                "/ProjectOuroboros/Images/Sprites/Rivers/nw_wn.png",
-                "/ProjectOuroboros/Images/Sprites/Rivers/se_es.png",
-                "/ProjectOuroboros/Images/Sprites/Rivers/sw_ws.png",
-                "/ProjectOuroboros/Images/Sprites/Rivers/we_ew.png"};
-
-            for (String str : directionsSpritesFilePath) {
-
-                Icon icon = new javax.swing.ImageIcon(getClass().getResource(str));
-                ImageIcon ii = (ImageIcon) icon;
-                Image image = (ii).getImage().getScaledInstance((int) (zoomScale * 125), (int) (zoomScale * 125), Image.SCALE_FAST);
-                scaledSprites.put(str, image);
-
-            }
-//      </editor-fold>
-
             if (!backgroundTileMap.isEmpty()) {
 
                 // deals with the background tiles
-                for (int y = -12; y <= yMax + 11; y++) {
+                for (int y = -12; y <= yMax + 12; y++) {
 
-                    for (int x = -12; x <= xMax + 11; x++) {
+                    for (int x = -12; x <= xMax + 12; x++) {
 
                         JLabel backgroundTile = backgroundTileMap.get("x" + x + "y" + y);
 
@@ -1873,7 +1860,9 @@ public final class WorldCreation extends javax.swing.JFrame {
                                 } else if (icon.toString().contains("/we_ew")) {
                                     riverDirection = directionsSpritesFilePath[5];
                                 }
+
                                 riverTile.setIcon(new ImageIcon(scaledSprites.get(riverDirection)));
+
                                 // </editor-fold>
                             }
 
@@ -2059,70 +2048,65 @@ public final class WorldCreation extends javax.swing.JFrame {
 
     private void button_SaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_SaveActionPerformed
 
-        System.out.println("tileMapFile: " + tileMap.toString());
-        
-        // W.I.P.
-//        try {
-//            String encryptedTileMap = encrypt(tileMap.toString(), SECRET_KEY);
-//            System.out.println("encryptedTileMap: " + encryptedTileMap);
-//        } catch (Exception e) {
-//
-//        }
+//        System.out.println("tileMapJSON: " + tileMapJSON);
+        try (FileWriter writer = new FileWriter("src\\ProjectOuroboros\\SavedWorlds.json")) {
 
-//        try (FileWriter writer = new FileWriter(worldSettingsFilepath)) {
-//
-//            System.out.println("[Saving World]");
-//
-//            JSONObject saveCurrent = new JSONObject();
-//            saveCurrent.put("current", worldSettings);
-//            JSONArray saveCurrentArray = (JSONArray) saveCurrent.get("current");
-//
-//            JSONObject saveTileScale = new JSONObject();
-//            saveTileScale.put("tileScale", Integer.toString(slider_TileScale.getValue()));
-//            saveCurrentArray.add(0, saveTileScale);
-//
-//            JSONObject saveMapSize = new JSONObject();
-//            saveMapSize.put("mapsize", Integer.toString(slider_MapSize.getValue()));
-//            saveCurrentArray.add(1, saveMapSize);
-//
-//            JSONObject savePopulation = new JSONObject();
-//            savePopulation.put("population", Float.toString(slider_Population.getValue()));
-//            saveCurrentArray.add(2, savePopulation);
-//
-//            JSONObject saveMountainSpawnRate = new JSONObject();
-//            saveMountainSpawnRate.put("mountainSpawnRate", Integer.toString(slider_MountainSpawnRate.getValue()));
-//            saveCurrentArray.add(3, saveMountainSpawnRate);
-//
-//            JSONObject saveLakeSpawnRate = new JSONObject();
-//            saveLakeSpawnRate.put("lakeSpawnRate", Integer.toString(slider_LakeSpawnRate.getValue()));
-//            saveCurrentArray.add(4, saveLakeSpawnRate);
-//
-//            JSONObject saveForestSpawnRate = new JSONObject();
-//            saveForestSpawnRate.put("forestSpawnRate", Integer.toString(slider_ForestSpawnRate.getValue()));
-//            saveCurrentArray.add(5, saveForestSpawnRate);
-//
-//            JSONObject saveRiverSources = new JSONObject();
-//            saveRiverSources.put("riverSources", Integer.toString(slider_RiverSources.getValue()));
-//            saveCurrentArray.add(6, saveRiverSources);
-//
-//            JSONObject saveForestSources = new JSONObject();
-//            saveForestSources.put("forestSources", Integer.toString(slider_ForestSources.getValue()));
-//            saveCurrentArray.add(7, saveForestSources);
-//
-//            JSONObject saveHillBranches = new JSONObject();
-//            saveHillBranches.put("hillBranches", Integer.toString(slider_HillBranches.getValue()));
-//            saveCurrentArray.add(8, saveHillBranches);
-//
-//            JSONObject saveForestBranches = new JSONObject();
-//            saveForestBranches.put("forestBranches", Integer.toString(slider_ForestBranches.getValue()));
-//            saveCurrentArray.add(9, saveForestBranches);
-//
-//            saveCurrent.put("current", saveCurrentArray);
-//            writer.write(saveCurrent.toJSONString());
-//
-//        } catch (Exception e) {
-//
-//        }
+            System.out.println("[Saving World]");
+
+            JSONObject saveWorld = new JSONObject();
+            saveWorld.put("current", worldSettings);
+            JSONArray saveWorldArray = (JSONArray) saveWorld.get("current");
+
+            JSONArray tileMapArray = new JSONArray();
+            JSONArray riverTileMapArray = new JSONArray();
+
+            for (int y = 1; y <= yMax; y++) {
+
+                for (int x = 1; x <= xMax; x++) {
+
+                    String coordinates = "x" + x + "y" + y;
+
+                    JSONObject tileObj = new JSONObject();
+                    JSONObject tileInfoObj = new JSONObject();
+
+                    tileInfoObj.put("biome: ", tileMap.get(coordinates).getName());
+                    tileInfoObj.put("y: ", Integer.toString(y));
+                    tileInfoObj.put("x: ", Integer.toString(x));
+
+                    tileObj.put(coordinates, tileInfoObj);
+                    tileMapArray.add(tileObj);
+
+                    try {
+
+                        // (todo) figure out a way to save the rivertiledirection
+                        if (riverTileMap.get(coordinates) != null) {
+
+                            JSONObject riverTileObj = new JSONObject();
+                            JSONObject riverTileInfoObj = new JSONObject();
+
+                            System.out.println("tileCoordinates: " + coordinates);
+                            System.out.println("Type: " + riverTileMap.get(coordinates).getName());
+//                            System.out.println("Direction: ");
+                        }
+
+                    } catch (Exception e) {
+
+                    }
+
+                }
+            }
+
+            JSONObject saveTileMap = new JSONObject();
+            saveTileMap.put("tileMap", tileMapArray);
+            saveWorldArray.add(0, saveTileMap);
+
+            saveWorld.put("current", saveWorldArray);
+            writer.write(saveWorld.toJSONString());
+
+        } catch (Exception e) {
+
+        }
+
         linebreak(2);
 
     }//GEN-LAST:event_button_SaveActionPerformed
@@ -2311,7 +2295,6 @@ public final class WorldCreation extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton button_Generate;
     private javax.swing.JButton button_Save;
-    private javax.swing.JLabel label_BackgroundTiles;
     private javax.swing.JLabel label_Biome;
     private javax.swing.JLabel label_Coordinates;
     private javax.swing.JLabel label_ForestBranches;
@@ -2482,24 +2465,6 @@ public final class WorldCreation extends javax.swing.JFrame {
 
     }
 // </editor-fold>
-
-    //    <editor-fold desc="decryption and encryption">
-    public static String encrypt(String data, String key) throws Exception {
-        Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-        SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(), ALGORITHM);
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-        byte[] encryptedBytes = cipher.doFinal(data.getBytes());
-        return Base64.getEncoder().encodeToString(encryptedBytes);
-    }
-
-    public static String decrypt(String encryptedData, String key) throws Exception {
-        Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-        SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(), ALGORITHM);
-        cipher.init(Cipher.DECRYPT_MODE, secretKey);
-        byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
-        return new String(decryptedBytes);
-    }
-//    </editor-fold>
 
     public static void linebreak(int type) {
 
