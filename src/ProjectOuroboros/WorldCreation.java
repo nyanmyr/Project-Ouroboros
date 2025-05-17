@@ -105,6 +105,8 @@ public final class WorldCreation extends javax.swing.JFrame {
         "/ProjectOuroboros/Images/Sprites/Rivers/se_es.png",
         "/ProjectOuroboros/Images/Sprites/Rivers/sw_ws.png",
         "/ProjectOuroboros/Images/Sprites/Rivers/we_ew.png"};
+    
+    public boolean loadWorld;
 
 //    </editor-fold>
     public WorldCreation() {
@@ -150,7 +152,11 @@ public final class WorldCreation extends javax.swing.JFrame {
         //      </editor-fold>
 
         // add a condition to check if generate or load world here
-        GenerateWorld();
+        if (loadWorld) {
+            loadWorld();
+        } else {
+            GenerateWorld();
+        }
         //      <editor-fold desc="fixes the tile orders.">
         // changes the placeholder biome "Frr" to Fr
         // and also fixes the order of the tile, river, settlement, settlement names tile map
@@ -1797,7 +1803,7 @@ public final class WorldCreation extends javax.swing.JFrame {
         button_Save.setBounds((int) (screenWidth - 325),
                 (int) (screenHeight - 150),
                 300, 50);
-        
+
         button_Load.setBounds((int) (screenWidth - 325),
                 (int) (screenHeight - 225),
                 300, 50);
@@ -2201,32 +2207,57 @@ public final class WorldCreation extends javax.swing.JFrame {
 
     private void button_LoadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_LoadActionPerformed
 
-        try (FileReader reader = new FileReader(savedWorldsFilepath)) {
-
-            System.out.println("[Loading World]");
-
-            JSONObject loadWorld = (JSONObject) parser.parse(reader);
-            JSONArray loadWorldArray = (JSONArray) loadWorld.get("current");
-
-            JSONObject settlementsTileMapObj = (JSONObject) loadWorldArray.get(0);
-//            System.out.println("settlementsTileMapObj: " + settlementsTileMapObj);
-            JSONArray settlementsTileMapArray = (JSONArray) settlementsTileMapObj.get("settlementsTileMap");
-            
-            for (int i = 0; i < settlementsTileMapArray.size(); i++) {
-                System.out.println(settlementsTileMapArray.get(i));
-                JSONObject settlementTile
-            }
-            
-            HashMap<String, String> settlementNamesTemp = new HashMap<>();
-
-        } catch (Exception e) {
-
-        }
-
-        linebreak(2);
-
+        SaveWorldSettings();
+        dispose();
+        new LoadingSequence().setVisible(true);
+        // pause development for loading world for now: work on the save world JTable
+        // implement the method to put the saved world in the loadedworld so that when world creation is started
+        // it loads the loadedworld
 
     }//GEN-LAST:event_button_LoadActionPerformed
+
+    private void loadWorld() {
+        try (FileReader reader = new FileReader(savedWorldsFilepath)) {
+            
+            System.out.println("[Loading World]");
+            
+            JSONObject loadWorld = (JSONObject) parser.parse(reader);
+            JSONArray loadWorldArray = (JSONArray) loadWorld.get("current");
+            
+            JSONObject loadSettlementsTileMap = (JSONObject) loadWorldArray.get(0);
+            JSONArray settlementsTileMapArray = (JSONArray) loadSettlementsTileMap.get("settlementsTileMap");
+            
+            HashMap<String, JLabel> settlementNamesTemp = new HashMap<>();
+            
+            for (int i = 0; i < settlementsTileMapArray.size(); i++) {
+                JSONObject settlementTileObj = (JSONObject) settlementsTileMapArray.get(i);
+                String key = settlementTileObj.keySet().toString().substring(1, settlementTileObj.keySet().toString().length() - 1);  // e.g., "x17y4"
+                JSONObject settlementTileInfoObj = (JSONObject) settlementTileObj.get(key);
+                String settlementName = settlementTileInfoObj.get("name: ").toString();
+                String settlementType = settlementTileInfoObj.get("type: ").toString();
+                String settlementX = settlementTileInfoObj.get("x: ").toString();
+                String settlementY = settlementTileInfoObj.get("y: ").toString();
+                
+                String coordinates = "x" + settlementX + "y" + settlementY;
+                JLabel settlementTile = generateProtoTile(coordinates);
+                selectBiome(settlementTile, settlementType);
+                tileMapAddition(settlementTile, coordinates, settlementsTileMap);
+                JLabel settlementNameTile = generateProtoTile(coordinates);
+                settlementNameTile.setText(settlementName);
+                settlementNameTile.setName(settlementName);
+                panel_Mainpanel.add(settlementNameTile);
+                settlementsNameTileMap.put(coordinates, settlementNameTile);
+                
+            }
+            
+            System.out.println("settlementNamesTemp: " + settlementNamesTemp.size());
+            
+        } catch (Exception e) {
+            
+        }
+        
+        linebreak(2);
+    }
 
     private void loadSettlementNames() {
 
@@ -2479,6 +2510,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                 label.setName("Oc");
                 break;
             case "Sh":
+            case "Shore":
                 label.setFont(new java.awt.Font("Segoe UI", 0, 24));
                 label.setBackground(new java.awt.Color(0, 50, 205));
                 label.setForeground(new java.awt.Color(255, 255, 255));
@@ -2486,6 +2518,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                 label.setName("Shore");
                 break;
             case "Be":
+            case "Beach":
                 label.setFont(new java.awt.Font("Segoe UI", 0, 24));
                 label.setBackground(new java.awt.Color(255, 255, 153));
                 label.setForeground(new java.awt.Color(0, 0, 0));
@@ -2493,6 +2526,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                 label.setName("Beach");
                 break;
             case "Pl":
+            case "Plain":
                 label.setFont(new java.awt.Font("Segoe UI", 0, 24));
                 label.setBackground(new java.awt.Color(22, 109, 22));
                 label.setForeground(new java.awt.Color(0, 0, 0));
@@ -2507,6 +2541,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                 label.setName("Mt");
                 break;
             case "Ht":
+            case "Hill":
                 label.setFont(new java.awt.Font("Segoe UI", 0, 24));
                 label.setBackground(new java.awt.Color(40, 40, 46));
                 label.setForeground(new java.awt.Color(0, 0, 0));
@@ -2514,6 +2549,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                 label.setName("Hill");
                 break;
             case "Lk":
+            case "Lake":
                 label.setFont(new java.awt.Font("Segoe UI", 0, 24));
                 label.setBackground(new java.awt.Color(15, 80, 245));
                 label.setForeground(new java.awt.Color(255, 255, 255));
@@ -2528,12 +2564,14 @@ public final class WorldCreation extends javax.swing.JFrame {
                 label.setName("Rs");
                 break;
             case "Rv":
+            case "River":
                 label.setFont(new java.awt.Font("Segoe UI", 0, 24));
                 label.setBackground(new java.awt.Color(10, 50, 255));
                 label.setForeground(new java.awt.Color(0, 0, 0));
                 label.setName("River");
                 break;
             case "Fr":
+            case "Forest":
                 label.setFont(new java.awt.Font("Segoe UI", 0, 24));
                 label.setBackground(new java.awt.Color(22, 44, 22));
                 label.setForeground(new java.awt.Color(255, 255, 255));
@@ -2548,6 +2586,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                 label.setName("Frr");
                 break;
             case "Ca":
+            case "Capital":
                 label.setFont(new java.awt.Font("Segoe UI", 0, 24));
                 label.setBackground(new java.awt.Color(255, 205, 44));
                 label.setForeground(new java.awt.Color(0, 0, 0));
@@ -2555,6 +2594,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                 label.setName("Capital");
                 break;
             case "Ct":
+            case "City":
                 label.setFont(new java.awt.Font("Segoe UI", 0, 24));
                 label.setBackground(new java.awt.Color(155, 105, 44));
                 label.setForeground(new java.awt.Color(0, 0, 0));
@@ -2562,6 +2602,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                 label.setName("City");
                 break;
             case "Tw":
+            case "Town":
                 label.setFont(new java.awt.Font("Segoe UI", 0, 24));
                 label.setBackground(new java.awt.Color(66, 44, 22));
                 label.setForeground(new java.awt.Color(0, 0, 0));
@@ -2569,6 +2610,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                 label.setName("Town");
                 break;
             case "Vl":
+            case "Village":
                 label.setFont(new java.awt.Font("Segoe UI", 0, 24));
                 label.setBackground(new java.awt.Color(44, 22, 11));
                 label.setForeground(new java.awt.Color(0, 0, 0));
@@ -2582,7 +2624,7 @@ public final class WorldCreation extends javax.swing.JFrame {
         return label;
 
     }
-// </editor-fold>
+    // </editor-fold>
 
     public static void linebreak(int type) {
 
