@@ -93,3 +93,7 @@ progress (5/16/2025)
 • changed the rivertile sprite rescaling to happen only once (instead of everytime when the UI needs to update)
 • continued work on world saving
 • scrapped world encrypyion (unnecessary)
+
+version 0.0.16 (prototype)
+progress (5/17/2025)
+• continued worked on world saving
