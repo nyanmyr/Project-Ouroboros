@@ -61,3 +61,6 @@
  make:
  • world save/ load system
  • save multiple worlds
+
+ future:
+ • add dynamic scaling to every UI element
