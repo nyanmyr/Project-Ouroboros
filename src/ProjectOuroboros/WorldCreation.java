@@ -2244,45 +2244,52 @@ public final class WorldCreation extends javax.swing.JFrame {
     // rework everything from the top (brain hurting)
     static JSONArray loadedWorldsArray = new JSONArray();
 
+    // may 17, 2025 (before rework)
+
     private void button_SaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_SaveActionPerformed
 
-//        saveWorld("save");
-
-        panel_SavedWorlds.setVisible(true);
-
-        DefaultTableModel savedWorlds = (DefaultTableModel) table_SavedWorlds.getModel();
-        savedWorlds.setRowCount(0);
-
+        // this loads the save files present in the json file
         try (FileReader reader = new FileReader(savedWorldsFilepath)) {
 
-            System.out.println("[Loading Saved Worlds]");
-
             loadedWorldsArray = (JSONArray) parser.parse(reader);
+            System.out.println("loadedWorldsArray: " + loadedWorldsArray);
 
-            // loads the save files and inserts them into the jtable
-            // take into account the possibility that some save files will be renamed
-            for (int i = 0; i < loadedWorldsArray.size(); i++) {
-                JSONObject loadedWorldObj = (JSONObject) loadedWorldsArray.get(i);
-                JSONArray loadedWorldArray = (JSONArray) loadedWorldObj.get("save" + (i + 1));
-                JSONObject loadedWorldSaveDateObj = (JSONObject) loadedWorldArray.get(0);
-                savedWorlds.addRow(new Object[]{("save" + (i + 1)), loadedWorldSaveDateObj.get("saveDate")});
-
-            }
-
-//            loadedWorldObj = (JSONObject) loadWorld.get(0);
         } catch (Exception e) {
 
         }
 
-        table_SavedWorlds.setModel(savedWorlds);
+//        saveWorld("save");
+        panel_SavedWorlds.setVisible(true);
+        openSaveWorldsTable();
+
         linebreak(2);
 
     }//GEN-LAST:event_button_SaveActionPerformed
 
+    private void openSaveWorldsTable() {
+        DefaultTableModel savedWorldsTable = (DefaultTableModel) table_SavedWorlds.getModel();
+        savedWorldsTable.setRowCount(0);
+
+        System.out.println("[Loading Saved Worlds]");
+
+        // loads the save files and inserts them into the jtable
+        // take into account the possibility that some save files will be renamed
+        for (int i = 0; i < loadedWorldsArray.size(); i++) {
+            JSONObject loadedWorldObj = (JSONObject) loadedWorldsArray.get(i);
+            String loadedWorldKey = loadedWorldObj.keySet().toString().substring(1, loadedWorldObj.keySet().toString().length() - 1);
+            JSONArray loadedWorldArray = (JSONArray) loadedWorldObj.get(loadedWorldKey);
+            JSONObject loadedWorldSaveDateObj = (JSONObject) loadedWorldArray.get(0);
+            savedWorldsTable.addRow(new Object[]{(loadedWorldKey), loadedWorldSaveDateObj.get("saveDate")});
+        }
+    }
+
     private void saveWorld(String type) {
 
         String savefileName = "save" + (loadedWorldsArray.size() + 1);
-        
+        if (loadedWorldsArray.toString().contains(savefileName)) {
+            savefileName = "save" + (loadedWorldsArray.size() + 2);
+        }
+
         try (FileWriter writer = new FileWriter(savedWorldsFilepath)) {
 
             System.out.println("[Saving World]");
@@ -2293,100 +2300,109 @@ public final class WorldCreation extends javax.swing.JFrame {
 
                 case "save":
                     // saves the tiles
-                    saveWorld.put(savefileName, worldSettings);
-                    JSONArray saveWorldArray = (JSONArray) saveWorld.get(savefileName);
+                    saveWorld.put(savefileName, new JSONArray());
+                    JSONArray selectedWorldArray = (JSONArray) saveWorld.get(savefileName);
 
+                    // used to store the parsed tile maps before putting them in the save world obj
                     JSONArray tileMapArray = new JSONArray();
                     JSONArray riverTileMapArray = new JSONArray();
                     JSONArray settlementsTileMapArray = new JSONArray();
 
                     // saves the tiles from the hashmaps
-                    for (int y = 1; y <= yMax; y++) {
-
-                        for (int x = 1; x <= xMax; x++) {
-
-                            String coordinates = "x" + x + "y" + y;
-
-                            JSONObject tileObj = new JSONObject();
-                            JSONObject tileInfoObj = new JSONObject();
-
-                            tileInfoObj.put("biome: ", tileMap.get(coordinates).getName());
-                            tileInfoObj.put("y: ", Integer.toString(y));
-                            tileInfoObj.put("x: ", Integer.toString(x));
-
-                            tileObj.put(coordinates, tileInfoObj);
-                            tileMapArray.add(tileObj);
-
-                            // saves the river tiles
-                            try {
-
-                                if (riverTileMap.get(coordinates) != null) {
-
-                                    JSONObject riverTileObj = new JSONObject();
-                                    JSONObject riverTileInfoObj = new JSONObject();
-
-                                    if (!riverTileMap.get(coordinates).getName().equals("Rs")) {
-                                        riverTileInfoObj.put("direction: ", riverTileDirections.get(coordinates));
-                                    }
-                                    riverTileInfoObj.put("type: ", riverTileMap.get(coordinates).getName());
-                                    riverTileInfoObj.put("y: ", Integer.toString(y));
-                                    riverTileInfoObj.put("x: ", Integer.toString(x));
-
-                                    riverTileObj.put(coordinates, riverTileInfoObj);
-                                    riverTileMapArray.add(riverTileObj);
-
-                                }
-
-                            } catch (Exception e) {
-
-                            }
-
-                            // saves the settlement tiles w/ name
-                            try {
-
-                                if (settlementsTileMap.get(coordinates) != null) {
-
-                                    JSONObject settlementTileObj = new JSONObject();
-                                    JSONObject settlementTileInfoObj = new JSONObject();
-
-                                    settlementTileInfoObj.put("name: ", settlementsNameTileMap.get(coordinates).getName());
-                                    settlementTileInfoObj.put("type: ", settlementsTileMap.get(coordinates).getName());
-                                    settlementTileInfoObj.put("y: ", Integer.toString(y));
-                                    settlementTileInfoObj.put("x: ", Integer.toString(x));
-
-                                    settlementTileObj.put(coordinates, settlementTileInfoObj);
-                                    settlementsTileMapArray.add(settlementTileObj);
-
-                                }
-
-                            } catch (Exception e) {
-
-                            }
-
-                        }
-                    }
-
-                    // saves the tilemaps to the save file
-                    JSONObject saveTileMap = new JSONObject();
-                    saveTileMap.put("tileMap", tileMapArray);
-                    saveWorldArray.add(0, saveTileMap);
-
-                    JSONObject saveRiverTileMap = new JSONObject();
-                    saveRiverTileMap.put("riverTileMap", riverTileMapArray);
-                    saveWorldArray.add(0, saveRiverTileMap);
-
-                    JSONObject saveSettlementTileMap = new JSONObject();
-                    saveSettlementTileMap.put("settlementsTileMap", settlementsTileMapArray);
-                    saveWorldArray.add(0, saveSettlementTileMap);
-
+//                    for (int y = 1; y <= yMax; y++) {
+//
+//                        for (int x = 1; x <= xMax; x++) {
+//
+//                            String coordinates = "x" + x + "y" + y;
+//
+//                            JSONObject tileObj = new JSONObject();
+//                            JSONObject tileInfoObj = new JSONObject();
+//
+//                            tileInfoObj.put("biome: ", tileMap.get(coordinates).getName());
+//                            tileInfoObj.put("y: ", Integer.toString(y));
+//                            tileInfoObj.put("x: ", Integer.toString(x));
+//
+//                            tileObj.put(coordinates, tileInfoObj);
+//                            tileMapArray.add(tileObj);
+//
+//                            // saves the river tiles
+//                            try {
+//
+//                                if (riverTileMap.get(coordinates) != null) {
+//
+//                                    JSONObject riverTileObj = new JSONObject();
+//                                    JSONObject riverTileInfoObj = new JSONObject();
+//
+//                                    if (!riverTileMap.get(coordinates).getName().equals("Rs")) {
+//                                        riverTileInfoObj.put("direction: ", riverTileDirections.get(coordinates));
+//                                    }
+//                                    riverTileInfoObj.put("type: ", riverTileMap.get(coordinates).getName());
+//                                    riverTileInfoObj.put("y: ", Integer.toString(y));
+//                                    riverTileInfoObj.put("x: ", Integer.toString(x));
+//
+//                                    riverTileObj.put(coordinates, riverTileInfoObj);
+//                                    riverTileMapArray.add(riverTileObj);
+//
+//                                }
+//
+//                            } catch (Exception e) {
+//
+//                            }
+//
+//                            // saves the settlement tiles w/ name
+//                            try {
+//
+//                                if (settlementsTileMap.get(coordinates) != null) {
+//
+//                                    JSONObject settlementTileObj = new JSONObject();
+//                                    JSONObject settlementTileInfoObj = new JSONObject();
+//
+//                                    settlementTileInfoObj.put("name: ", settlementsNameTileMap.get(coordinates).getName());
+//                                    settlementTileInfoObj.put("type: ", settlementsTileMap.get(coordinates).getName());
+//                                    settlementTileInfoObj.put("y: ", Integer.toString(y));
+//                                    settlementTileInfoObj.put("x: ", Integer.toString(x));
+//
+//                                    settlementTileObj.put(coordinates, settlementTileInfoObj);
+//                                    settlementsTileMapArray.add(settlementTileObj);
+//
+//                                }
+//
+//                            } catch (Exception e) {
+//
+//                            }
+//
+//                        }
+//                    }
+//
+//                    // saves the tilemaps to the save file
+//                    JSONObject saveTileMap = new JSONObject();
+//                    saveTileMap.put("tileMap", tileMapArray);
+//                    selectedWorldArray.add(0, saveTileMap);
+//
+//                    JSONObject saveRiverTileMap = new JSONObject();
+//                    saveRiverTileMap.put("riverTileMap", riverTileMapArray);
+//                    selectedWorldArray.add(0, saveRiverTileMap);
+//
+//                    JSONObject saveSettlementTileMap = new JSONObject();
+//                    saveSettlementTileMap.put("settlementsTileMap", settlementsTileMapArray);
+//                    selectedWorldArray.add(0, saveSettlementTileMap);
+//
                     JSONObject saveDate = new JSONObject();
                     saveDate.put("saveDate", getSavedTime());
-                    saveWorldArray.add(0, saveDate);
+                    selectedWorldArray.add(0, saveDate);
 
-                    saveWorld.put(savefileName, saveWorldArray);
-                    writer.write(saveWorld.toJSONString());
+                    saveWorld.put(savefileName, selectedWorldArray);
+                    loadedWorldsArray.remove(saveWorld);
+                    loadedWorldsArray.add(saveWorld);
+                    writer.write(loadedWorldsArray.toJSONString());
+
+//                    System.out.println("saveWorld: " + saveWorld);
+//                    loadedWorldsArray.add(saveWorld);
+//                    System.out.println("loadedWorldsArray: " + loadedWorldsArray);
                     break;
                 case "worldPanel":
+                    writer.write(loadedWorldsArray.toJSONString());
+                    openSaveWorldsTable();
                     break;
 
             }
@@ -2405,9 +2421,7 @@ public final class WorldCreation extends javax.swing.JFrame {
         LocalDateTime myDateObj = LocalDateTime.now();
         DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
         formattedDate = myDateObj.format(myFormatObj);
-        System.out.println("After formatting: " + formattedDate);
-
-        linebreak(0);
+        System.out.println("Formatted Date: " + formattedDate);
 
         return formattedDate;
 
@@ -2436,31 +2450,36 @@ public final class WorldCreation extends javax.swing.JFrame {
 
     }//GEN-LAST:event_button_DeleteWorldActionPerformed
 
+    // this assigns which column is selected
+    int selectedRow;
+
     private void button_RenameWorldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_RenameWorldActionPerformed
 
-        int selectedRow = table_SavedWorlds.getSelectedRow();
+        selectedRow = table_SavedWorlds.getSelectedRow();
         if (selectedRow != -1) {
             saveWorldPanelButtons("Rename");
         }
 
     }//GEN-LAST:event_button_RenameWorldActionPerformed
 
+    // this stores the name of the selected save
     static String selectedSave;
 
     private void saveWorldPanelButtons(String action) {
 
         panel_WorldActions.setVisible(true);
 
-        selectedSave = table_SavedWorlds.getModel().getValueAt(0, table_SavedWorlds.getSelectedColumn()).toString();
+        selectedSave = table_SavedWorlds.getModel().getValueAt(selectedRow, table_SavedWorlds.getSelectedColumn()).toString();
 
         switch (action) {
             case "Rename":
                 textfield_Rename.setVisible(true);
                 label_WorldName.setText("Rename \""
-                        + table_SavedWorlds.getModel().getValueAt(0, table_SavedWorlds.getSelectedColumn())
+                        + table_SavedWorlds.getModel().getValueAt(selectedRow, table_SavedWorlds.getSelectedColumn())
                         + "?\"");
                 button_Confirm.setText("Rename");
                 textfield_Rename.setText(selectedSave);
+
                 break;
             case "Delete":
                 break;
@@ -2483,31 +2502,35 @@ public final class WorldCreation extends javax.swing.JFrame {
 
     private void button_ConfirmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_ConfirmActionPerformed
 
-        // work on renaming
         String confirmButtonText = button_Confirm.getText();
-        switch (confirmButtonText) {
-            case "Rename":
-                for (int i = 0; i < loadedWorldsArray.size(); i++) {
 
-                    JSONObject loadedWorldObj = (JSONObject) loadedWorldsArray.get(i);
-                    System.out.println("loadedWorldObj: " + loadedWorldObj);
-                    if (loadedWorldObj.containsKey(selectedSave)) {
+        for (int i = 0; i < loadedWorldsArray.size(); i++) {
+
+            JSONObject loadedWorldObj = (JSONObject) loadedWorldsArray.get(i);
+            if (loadedWorldObj.containsKey(selectedSave)) {
+
+                switch (confirmButtonText) {
+                    case "Rename":
                         loadedWorldsArray.remove(i);
-                        System.out.println("Contents: " + loadedWorldObj.get(selectedSave));
+                        System.out.println("Renamed Contents: " + loadedWorldObj.get(selectedSave));
                         JSONObject renamedWorldObj = new JSONObject();
                         renamedWorldObj.put(textfield_Rename.getText(), loadedWorldObj.get(selectedSave));
-                        System.out.println("TEST: " + renamedWorldObj);
-                        loadedWorldsArray.add(renamedWorldObj);
-                        saveWorld("worldPanel");
-                        System.out.println("loadedWorldObj: " + loadedWorldsArray);
-                    }
+                        loadedWorldsArray.add(0, renamedWorldObj);
+                        break;
+                    case "Delete":
+                        System.out.println("Deleted Contents: " + loadedWorldObj.get(selectedSave));
+                        loadedWorldsArray.remove(i);
+                        break;
+                    case "Save":
+                        break;
 
                 }
-                break;
-            case "Delete":
-                break;
-            case "Save":
-                break;
+
+                System.out.println("loadedWorldArray Saved: " + loadedWorldsArray);
+                saveWorld("worldPanel");
+
+            }
+
         }
 
         closeWorldActions();
