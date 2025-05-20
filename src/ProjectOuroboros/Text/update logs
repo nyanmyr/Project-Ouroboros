@@ -107,3 +107,13 @@ progress (5/18/2025)
 version 0.0.18 (prototype)
 progress (5/19/2025)
 • worked on rename functionality
+• added new generic prefixes (cuz why not)
+• added some extra comments to methods for clarity (less brainy hurty)
+• made rename/ delete functional
+• saving/ overwriting save currently WIP
+
+version 0.0.19 (prototype)
+progress (5/20/2025)
+• finished saving/ overwriting save functionality
+• reorganized WorldCreation.java with editor folds
+• added more prefixes and suffixes
