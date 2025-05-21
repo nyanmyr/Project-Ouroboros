@@ -62,6 +62,8 @@
  make:
  • world save/ load system
  • save multiple worlds
+ • put the json files in a seperate folder
 
  future:
  • add dynamic scaling to every UI element
+ 

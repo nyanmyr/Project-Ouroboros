@@ -117,3 +117,8 @@ progress (5/20/2025)
 • finished saving/ overwriting save functionality
 • reorganized WorldCreation.java with editor folds
 • added more prefixes and suffixes
+• finished saving functionality
+
+version 0.0.21 (prototype)
+progress (5/21/2025)
+• worked on loading worlds

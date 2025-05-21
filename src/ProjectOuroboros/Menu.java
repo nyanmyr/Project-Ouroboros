@@ -165,7 +165,7 @@ public class Menu extends javax.swing.JFrame {
     private void button_NewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_NewActionPerformed
         
         dispose();
-        new LoadingSequence().setVisible(true);
+        new LoadingSequence("Generate").setVisible(true);
         
     }//GEN-LAST:event_button_NewActionPerformed
 

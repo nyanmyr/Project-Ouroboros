@@ -6,7 +6,9 @@ import java.util.TimerTask;
 
 public class LoadingSequence extends javax.swing.JFrame {
 
-    public LoadingSequence() {
+    public LoadingSequence(String loadingType) {
+        
+        System.out.println("Loading Sequence: " + loadingType);
 
         Timer t = new Timer();
         
@@ -25,7 +27,7 @@ public class LoadingSequence extends javax.swing.JFrame {
                 progress++;
                 if (progress >= 2) {
                     label.setText("Loading Terrain...");
-                    new WorldCreation().setVisible(true);
+                    new WorldCreation(loadingType).setVisible(true);
                     dispose();
                     t.cancel();
                 }
@@ -111,7 +113,7 @@ public class LoadingSequence extends javax.swing.JFrame {
 
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new LoadingSequence().setVisible(true);
+                new LoadingSequence(null).setVisible(true);
             }
         });
     }
