@@ -95,7 +95,6 @@ public final class WorldCreation extends javax.swing.JFrame {
     final String worldSettingsFilepath = "src\\ProjectOuroboros\\WorldSettings.json";
     final String savedWorldsFilepath = "src\\ProjectOuroboros\\SavedWorlds.json";
     JSONParser parser = new JSONParser();
-    JSONArray worldSettings = new JSONArray();
 
     JSONArray settlementPrefixes = new JSONArray();
     JSONArray settlementSufixes = new JSONArray();
@@ -111,12 +110,13 @@ public final class WorldCreation extends javax.swing.JFrame {
         "/ProjectOuroboros/Images/Sprites/Rivers/sw_ws.png",
         "/ProjectOuroboros/Images/Sprites/Rivers/we_ew.png"};
 
-    public boolean loadingWorld;
+    // stores the world settings to be put on a savefile
+    JSONObject worldSettings = new JSONObject();
+
+    JSONObject loadedWorld = new JSONObject();
 
 //    </editor-fold>
     public WorldCreation(String worldCreationType) {
-
-        linebreak(3);
 
         initComponents();
         screenSize = panel_Mainpanel.getSize();
@@ -124,26 +124,6 @@ public final class WorldCreation extends javax.swing.JFrame {
         screenHeight = screenSize.height;
 
         setExtendedState(WorldCreation.MAXIMIZED_BOTH);
-
-        // loads the json files
-        LoadWorldSettings();
-        loadSettlementNames();
-
-        // generates the background ocean layer
-        for (int y = -12; y <= yMax + 13; y++) {
-
-            for (int x = -12; x <= xMax + 13; x++) {
-
-                String tileCoordinates = "x" + x + "y" + y;
-
-                JLabel newTile = generateProtoTile(tileCoordinates);
-
-                selectBiome(newTile, "Oc");
-                tileMapAddition(newTile, tileCoordinates, backgroundTileMap);
-
-            }
-
-        }
 
         //        <editor-fold desc="rescales the river sprites">
         for (String str : directionsSpritesFilePath) {
@@ -157,91 +137,111 @@ public final class WorldCreation extends javax.swing.JFrame {
         //      </editor-fold>
 
         if (worldCreationType.equals("Generate")) {
+            // loads the json files
+            LoadWorldSettings();
+            loadSettlementNames();
+
             // add a condition to check if generate or load world here
-            if (loadingWorld) {
-                loadWorld();
-            } else {
-                GenerateWorld();
+            GenerateWorld();
+        } else if (worldCreationType.equals("Load")) {
+
+            LoadWorld();
+            // now add a function that loads the world tiles
+            // also u forgor to save the world settings
+        }
+
+        // generates the background ocean layer
+        for (int y = -12; y <= yMax + 13; y++) {
+
+            for (int x = -12; x <= xMax + 13; x++) {
+
+                String tileCoordinates = "x" + x + "y" + y;
+
+                JLabel newTile = generateProtoTile(tileCoordinates);
+
+                selectBiome(newTile, "Oc");
+                tileMapAddition(newTile, tileCoordinates, backgroundTileMap);
+                panel_Mainpanel.setComponentZOrder(backgroundTileMap.get(tileCoordinates), 2);
+
             }
-            //      <editor-fold desc="fixes the tile orders.">
-            // changes the placeholder biome "Frr" to Fr
-            // and also fixes the order of the tile, river, settlement, settlement names tile map
-            if (!tileMap.isEmpty()) {
-                for (int y = 1; y <= yMax; y++) {
 
-                    for (int x = 1; x <= xMax; x++) {
+        }
 
-                        String tileCoordinates = "x" + x + "y" + y;
-                        JLabel tile = tileMap.get(tileCoordinates);
-                        if (tile.getName().equals("Frr")) {
-                            selectBiome(tile, "Fr");
-                        }
+        // <editor-fold desc="fixes the tile orders.">
+        // changes the placeholder biome "Frr" to Fr
+        // and also fixes the order of the tile, river, settlement, settlement names tile map
+        if (!tileMap.isEmpty()) {
+            for (int y = 1; y <= yMax; y++) {
 
-                        // reorders the rivertiles
-                        try {
+                for (int x = 1; x <= xMax; x++) {
 
-                            JLabel riverTile = riverTileMap.get(tileCoordinates);
-                            if (riverTile.getName().equals("River")) {
-                                riverTile.setBorder(null);
-                                riverTile.setText("");
-                                riverTile.setOpaque(false);
-                                // implement put to hashmap the direction
-                                if (riverTile.getIcon().toString().contains("/ne_en")) {
-                                    riverTileDirections.put(tileCoordinates, "NE");
-                                } else if (riverTile.getIcon().toString().contains("/ns_sn")) {
-                                    riverTileDirections.put(tileCoordinates, "NS");
-                                } else if (riverTile.getIcon().toString().contains("/nw_wn")) {
-                                    riverTileDirections.put(tileCoordinates, "NW");
-                                } else if (riverTile.getIcon().toString().contains("/se_es")) {
-                                    riverTileDirections.put(tileCoordinates, "SE");
-                                } else if (riverTile.getIcon().toString().contains("/sw_ws")) {
-                                    riverTileDirections.put(tileCoordinates, "SW");
-                                } else if (riverTile.getIcon().toString().contains("/we_ew")) {
-                                    riverTileDirections.put(tileCoordinates, "WE");
-                                }
-                                panel_Mainpanel.setComponentZOrder(riverTile, 0);
+                    String tileCoordinates = "x" + x + "y" + y;
+                    JLabel tile = tileMap.get(tileCoordinates);
+                    if (tile.getName().equals("Frr")) {
+                        selectBiome(tile, "Fr");
+                    }
+
+                    // reorders the rivertiles
+                    try {
+
+                        JLabel riverTile = riverTileMap.get(tileCoordinates);
+                        if (riverTile.getName().equals("River")) {
+                            riverTile.setBorder(null);
+                            riverTile.setText("");
+                            riverTile.setOpaque(false);
+                            // implement put to hashmap the direction
+                            if (riverTile.getIcon().toString().contains("/ne_en")) {
+                                riverTileDirections.put(tileCoordinates, "NE");
+                            } else if (riverTile.getIcon().toString().contains("/ns_sn")) {
+                                riverTileDirections.put(tileCoordinates, "NS");
+                            } else if (riverTile.getIcon().toString().contains("/nw_wn")) {
+                                riverTileDirections.put(tileCoordinates, "NW");
+                            } else if (riverTile.getIcon().toString().contains("/se_es")) {
+                                riverTileDirections.put(tileCoordinates, "SE");
+                            } else if (riverTile.getIcon().toString().contains("/sw_ws")) {
+                                riverTileDirections.put(tileCoordinates, "SW");
+                            } else if (riverTile.getIcon().toString().contains("/we_ew")) {
+                                riverTileDirections.put(tileCoordinates, "WE");
                             }
-
-                        } catch (Exception e) {
-
+                            panel_Mainpanel.setComponentZOrder(riverTile, 0);
                         }
 
-                        // reorders the settlements
-                        try {
+                    } catch (Exception e) {
 
-                            JLabel settlementTile = settlementsTileMap.get(tileCoordinates);
-                            if (settlementTile.getName().equals("Capital")
-                                    || settlementTile.getName().equals("City")
-                                    || settlementTile.getName().equals("Town")
-                                    || settlementTile.getName().equals("Village")) {
-                                panel_Mainpanel.setComponentZOrder(settlementTile, 0);
-                            }
+                    }
 
-                        } catch (Exception e) {
+                    // reorders the settlements
+                    try {
 
+                        JLabel settlementTile = settlementsTileMap.get(tileCoordinates);
+                        if (settlementTile.getName().equals("Capital")
+                                || settlementTile.getName().equals("City")
+                                || settlementTile.getName().equals("Town")
+                                || settlementTile.getName().equals("Village")) {
+                            panel_Mainpanel.setComponentZOrder(settlementTile, 0);
                         }
 
-                        // reorder the settlment names
-                        try {
+                    } catch (Exception e) {
 
-                            JLabel settlementNameTile = settlementsNameTileMap.get(tileCoordinates);
-                            if (!settlementNameTile.getName().isEmpty()) {
-                                panel_Mainpanel.setComponentZOrder(settlementNameTile, 0);
-                            }
+                    }
 
-                        } catch (Exception e) {
+                    // reorder the settlment names
+                    try {
 
+                        JLabel settlementNameTile = settlementsNameTileMap.get(tileCoordinates);
+                        if (!settlementNameTile.getName().isEmpty()) {
+                            panel_Mainpanel.setComponentZOrder(settlementNameTile, 0);
                         }
+
+                    } catch (Exception e) {
 
                     }
 
                 }
+
             }
-//      </editor-fold>
-        } else if (worldCreationType.equals("Load")) {
-            // now add a function that loads the world tiles
-            // also u forgor to save the world settings
         }
+        // </editor-fold>
 
         // maybe turn this into a method idk...
         // <editor-fold desc="adjusts component z order and window focus">
@@ -290,6 +290,60 @@ public final class WorldCreation extends javax.swing.JFrame {
         adjustUIComponents();
 
 //        System.out.println("Size: " + panel_Mainpanel.getComponents().length); check the size of the mainpanel
+    }
+
+    private void LoadWorld() {
+
+        // loads the world file and puts it into loadedWorld object
+        try (FileReader reader = new FileReader("src\\ProjectOuroboros\\LoadedWorld.json")) {
+
+            System.out.println("[Loading World]");
+
+            JSONObject loadCurrent = (JSONObject) parser.parse(reader);
+            JSONArray loadCurrentArray = (JSONArray) loadCurrent.get("current");
+
+            JSONObject loadWorldSettingsObj = (JSONObject) loadCurrentArray.get(0); // gets
+            JSONArray loadWorldSettingsArray = (JSONArray) loadWorldSettingsObj.get("worldSettings");
+            JSONObject loadMapSize = (JSONObject) loadWorldSettingsArray.get(1);
+
+            // sets the x and y size of the map according to the savedworld info
+            String mapSizeStr = (String) loadMapSize.get("mapsize");
+            slider_MapSize.setValue(Integer.parseInt(mapSizeStr));
+            mapSize = Integer.parseInt(mapSizeStr) + 2;
+            xMax = mapSize * 12 + 1;
+            yMax = (int) (mapSize * 6 + 3);
+            xMaxArray = new int[xMax + 1];
+            yMaxArray = new int[yMax + 1];
+            coordinatesX = xMaxArray.length / 2;
+            coordinatesY = yMaxArray.length / 2;
+            System.out.println("mapSize: " + mapSize);
+
+            // loads the settlement names array
+            JSONObject loadSettlementsTileMapObj = (JSONObject) loadCurrentArray.get(2); // gets
+            JSONArray loadSettlementsTileMapArray = (JSONArray) loadSettlementsTileMapObj.get("settlementsTileMap");
+            System.out.println("loadSettlementsTileMapArray: " + loadSettlementsTileMapArray);
+
+            // individually adds the settlements w/ names to the settlement and settlement names tilemap (WIP)
+            // now put these into the tilemap
+            for (Object loadedSettlementTile : loadSettlementsTileMapArray) {
+                JSONObject loadedSettlementTileObj = (JSONObject) loadedSettlementTile;
+                String loadedSettlementTileKey = loadedSettlementTileObj.keySet().toString().substring(1, loadedSettlementTileObj.keySet().toString().length() - 1);
+                JSONObject loadedSettlementTileInfoObj = (JSONObject) loadedSettlementTileObj.get(loadedSettlementTileKey);
+                String tileCoordinates = "x" + loadedSettlementTileInfoObj.get("x: ") + "y" + loadedSettlementTileInfoObj.get("y: ");
+                System.out.println("Coordinates: " + tileCoordinates);
+                System.out.println("Name: " + loadedSettlementTileInfoObj.get("name: "));
+                System.out.println("Type: " + loadedSettlementTileInfoObj.get("type: "));
+                System.out.println();
+            }
+
+//            System.out.println("settlementsNameTileMap: " + settlementsNameTileMap.size());
+        } catch (Exception e) {
+
+        }
+
+//        loaded = true;
+        linebreak(1);
+
     }
 
     // -----------------------------------------------------------------------------------------------------------
@@ -1959,7 +2013,7 @@ public final class WorldCreation extends javax.swing.JFrame {
 
     pack();
     }// </editor-fold>//GEN-END:initComponents
-    
+
     // -----------------------------------------------------------------------------------------------------------
     // <editor-fold desc="UI stuff (resizing, dashboard, zoomscaling)">
     private void updateDashboard() {
@@ -2435,6 +2489,7 @@ public final class WorldCreation extends javax.swing.JFrame {
 
             JSONObject loadCurrent = (JSONObject) parser.parse(reader);
             JSONArray loadCurrentArray = (JSONArray) loadCurrent.get("current");
+            worldSettings.put("worldSettings", loadCurrentArray);
 
             JSONObject tileScaleObj = (JSONObject) loadCurrentArray.get(0);
             String tileScaleStr = (String) tileScaleObj.get("tileScale");
@@ -2519,7 +2574,7 @@ public final class WorldCreation extends javax.swing.JFrame {
             System.out.println("[Saving World Settings]");
 
             JSONObject saveCurrent = new JSONObject();
-            saveCurrent.put("current", worldSettings);
+            saveCurrent.put("current", new JSONArray());
             JSONArray saveCurrentArray = (JSONArray) saveCurrent.get("current");
 
             JSONObject saveTileScale = new JSONObject();
@@ -2615,7 +2670,9 @@ public final class WorldCreation extends javax.swing.JFrame {
             JSONObject loadedWorldObj = (JSONObject) loadedWorldsArray.get(i);
             String loadedWorldKey = loadedWorldObj.keySet().toString().substring(1, loadedWorldObj.keySet().toString().length() - 1);
             JSONArray loadedWorldArray = (JSONArray) loadedWorldObj.get(loadedWorldKey);
-            JSONObject loadedWorldSaveDateObj = (JSONObject) loadedWorldArray.get(0);
+
+            // gets the saved date
+            JSONObject loadedWorldSaveDateObj = (JSONObject) loadedWorldArray.get(1);
             savedWorldsTable.addRow(new Object[]{(loadedWorldKey), loadedWorldSaveDateObj.get("saveDate")});
 
         }
@@ -2636,21 +2693,21 @@ public final class WorldCreation extends javax.swing.JFrame {
     }
 
     // implements the save function for the savedWorlds json file
-    private void saveWorld(String type) {
+    private void saveWorldFile(String type) {
 
         try (FileWriter writer = new FileWriter(savedWorldsFilepath)) {
 
             System.out.println("[Saving World]");
 
-            JSONObject saveWorld = new JSONObject();
+            JSONObject saveWorldFile = new JSONObject();
 
             switch (type) {
 
                 case "save":
                     // <editor-fold desc="this case saves the current world into the JSON">
                     // saves the tiles
-                    saveWorld.put(savefileName, new JSONArray());
-                    JSONArray selectedWorldArray = (JSONArray) saveWorld.get(savefileName);
+                    saveWorldFile.put(savefileName, new JSONArray());
+                    JSONArray selectedWorldArray = (JSONArray) saveWorldFile.get(savefileName);
 
                     // used to store the parsed tile maps before putting them in the save world obj
                     JSONArray tileMapArray = new JSONArray();
@@ -2740,13 +2797,16 @@ public final class WorldCreation extends javax.swing.JFrame {
                     saveDate.put("saveDate", getSavedTime());
                     selectedWorldArray.add(0, saveDate);
 
-                    saveWorld.put(savefileName, selectedWorldArray);
-                    loadedWorldsArray.remove(saveWorld);
-                    loadedWorldsArray.add(0, saveWorld);
+                    selectedWorldArray.add(0, worldSettings);
+
+                    // add saving of world settings here
+                    saveWorldFile.put(savefileName, selectedWorldArray);
+                    loadedWorldsArray.remove(saveWorldFile);
+                    loadedWorldsArray.add(0, saveWorldFile);
                     writer.write(loadedWorldsArray.toJSONString());
 
-//                    System.out.println("saveWorld: " + saveWorld);
-//                    loadedWorldsArray.add(saveWorld);
+//                    System.out.println("saveWorldFile: " + saveWorldFile);
+//                    loadedWorldsArray.add(saveWorldFile);
 //                    System.out.println("loadedWorldsArray: " + loadedWorldsArray);
                     break;
                 // </editor-fold>
@@ -2764,15 +2824,15 @@ public final class WorldCreation extends javax.swing.JFrame {
         openSaveWorldsTable("save");
     }
 
-    JSONObject loadWorld;
+    JSONObject loadWorldFile;
 
     // saves the selected savefile to the LoadedWorld json then loads it
-    private void loadWorld() {
+    private void loadWorldFile() {
 
         // gets the savefile key or name
-        String loadfileNameKey = loadWorld.keySet().toString().substring(1, loadWorld.keySet().toString().length() - 1);
+        String loadfileNameKey = loadWorldFile.keySet().toString().substring(1, loadWorldFile.keySet().toString().length() - 1);
         // gets the savefile contents using the aformentioned taken key
-        JSONArray loadFileContent = (JSONArray) loadWorld.get(loadfileNameKey);
+        JSONArray loadFileContent = (JSONArray) loadWorldFile.get(loadfileNameKey);
 
         System.out.println("Key: " + loadfileNameKey);
         System.out.println("Content: " + loadFileContent);
@@ -2782,10 +2842,10 @@ public final class WorldCreation extends javax.swing.JFrame {
 
             System.out.println("[Loading World]");
 
-            JSONObject loadWorld = new JSONObject();
-            loadWorld.put("current", loadFileContent);
+            JSONObject loadWorldFile = new JSONObject();
+            loadWorldFile.put("current", loadFileContent);
 
-            writer.write(loadWorld.toJSONString());
+            writer.write(loadWorldFile.toJSONString());
 
         } catch (Exception e) {
 
@@ -2857,7 +2917,7 @@ public final class WorldCreation extends javax.swing.JFrame {
             if (loadedWorldFilenamesList.contains(savefileName)) {
                 saveWorldPanelButtons("Overwrite", false);
             } else {
-                saveWorld("save");
+                saveWorldFile("save");
             }
 
         } else {
@@ -3025,11 +3085,11 @@ public final class WorldCreation extends javax.swing.JFrame {
                         case "Overwrite":
 //                        loadedWorldsArray.remove(i);
                             loadedWorldsArray.remove(i);
-                            saveWorld("save");
+                            saveWorldFile("save");
                             break;
                         case "Load":
-                            loadWorld = (JSONObject) loadedWorldsArray.get(i);
-                            loadWorld();
+                            loadWorldFile = (JSONObject) loadedWorldsArray.get(i);
+                            loadWorldFile();
                             break OUTER;
 
                     }
@@ -3040,7 +3100,7 @@ public final class WorldCreation extends javax.swing.JFrame {
 
             }
 
-            saveWorld("worldPanel");
+            saveWorldFile("worldPanel");
 
         } else {
             label_WorldName.setText("Renamed \""
@@ -3164,7 +3224,7 @@ public final class WorldCreation extends javax.swing.JFrame {
 
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new WorldCreation("Generate").setVisible(true);
+                new WorldCreation("Load").setVisible(true);
             }
         });
 
