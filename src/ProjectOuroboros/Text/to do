@@ -1,4 +1,7 @@
 
+ future:
+ • add dynamic scaling to every UI element
+
  unique:
       - replayability
 
@@ -59,11 +62,18 @@
  • date/ time/ turn
  • weather
 
- make:
+// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+// use this to make reminders
+// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+
+// -----------------------------------------------------------------------------------------------------------
+<editor-fold desc="use these to make code regions">
+<editor-fold>
+// ------------------------------------------------------------------------------------------------------------
+
+ do:
  • world save/ load system
  • save multiple worlds
  • put the json files in a seperate folder
-
- future:
- • add dynamic scaling to every UI element
+ • optimize the loading stuff
  
