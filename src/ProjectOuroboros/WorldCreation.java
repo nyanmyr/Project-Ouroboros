@@ -93,8 +93,9 @@ public final class WorldCreation extends javax.swing.JFrame {
 
     boolean loaded = false;
 
-    final String worldSettingsFilepath = "src\\ProjectOuroboros\\WorldSettings.json";
-    final String savedWorldsFilepath = "src\\ProjectOuroboros\\SavedWorlds.json";
+    final String worldSettingsFilepath = "src\\ProjectOuroboros\\Data\\WorldSettings.json";
+    final String savedWorldsFilepath = "src\\ProjectOuroboros\\Data\\SavedWorlds.json";
+    final String loadedWorldFilepath = "src\\ProjectOuroboros\\Data\\LoadedWorld.json";
     JSONParser parser = new JSONParser();
 
     JSONArray settlementPrefixes = new JSONArray();
@@ -153,13 +154,24 @@ public final class WorldCreation extends javax.swing.JFrame {
         } else if (worldCreationType.equals("Load")) {
 
             LoadWorld();
-            tempTest();
 
         }
 
-        // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-        // loading a world loads the components but does not display it in the UI
-        // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+        for (int y = -12; y <= yMax + 13; y++) {
+
+            for (int x = -12; x <= xMax + 13; x++) {
+
+                String tileCoordinates = "x" + x + "y" + y;
+
+                JLabel newTile = generateProtoTile(tileCoordinates);
+
+                selectBiome(newTile, "Oc");
+                tileMapAddition(newTile, tileCoordinates, backgroundTileMap);
+
+            }
+
+        }
+
         // <editor-fold desc="fixes the tile orders.">
         // changes the placeholder biome "Frr" to Fr
         // and also fixes the order of the tile, river, settlement, settlement names tile map
@@ -169,6 +181,8 @@ public final class WorldCreation extends javax.swing.JFrame {
                 for (int x = 1; x <= xMax; x++) {
 
                     String tileCoordinates = "x" + x + "y" + y;
+                    JLabel tile = tileMap.get(tileCoordinates);
+                    panel_Mainpanel.setComponentZOrder(tile, 0);
 
                     // reorders the rivertiles
                     try {
@@ -281,29 +295,10 @@ public final class WorldCreation extends javax.swing.JFrame {
 //        System.out.println("Size: " + panel_Mainpanel.getComponents().length); check the size of the mainpanel
     }
 
-    private void generateOceanTiles() {
-        // generates the background ocean layer
-        for (int y = -12; y <= yMax + 13; y++) {
-
-            for (int x = -12; x <= xMax + 13; x++) {
-
-                String tileCoordinates = "x" + x + "y" + y;
-
-                JLabel newTile = generateProtoTile(tileCoordinates);
-
-                selectBiome(newTile, "Oc");
-                tileMapAddition(newTile, tileCoordinates, backgroundTileMap);
-                panel_Mainpanel.setComponentZOrder(backgroundTileMap.get(tileCoordinates), 2);
-
-            }
-
-        }
-    }
-
     private void LoadWorld() {
 
         // loads the world file and puts it into loadedWorld object
-        try (FileReader reader = new FileReader("src\\ProjectOuroboros\\LoadedWorld.json")) {
+        try (FileReader reader = new FileReader(loadedWorldFilepath)) {
 
             System.out.println("[Loading World]");
 
@@ -354,8 +349,6 @@ public final class WorldCreation extends javax.swing.JFrame {
             JSONArray loadtileMapArray = (JSONArray) loadtileMapObj.get("tileMap");
             System.out.println("loadtileMapArray: " + loadtileMapArray);
 
-            linebreak(0);
-
             // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
             // turn this into a method (optimize)
             // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -379,9 +372,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                 tileMap.put(tileCoordinates, tile);
 
             }
-
             System.out.println("tileMap: " + tileMap.size());
-            linebreak(0);
 
             for (Object loadedRiverTile : loadRiverTileMapArray) {
 
@@ -401,9 +392,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                 riverTileMap.put(tileCoordinates, riverTile);
 
             }
-
             System.out.println("riverTileMap: " + riverTileMap.size());
-            linebreak(0);
 
             for (Object loadedSettlementTile : loadSettlementsTileMapArray) {
 
@@ -431,9 +420,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                 settlementsTileMap.put(tileCoordinates, settlementTile);
 
             }
-
             System.out.println("settlementsTileMap: " + settlementsTileMap.size());
-            linebreak(0);
 
 //            System.out.println("settlementsNameTileMap: " + settlementsNameTileMap.size());
         } catch (Exception e) {
@@ -443,7 +430,9 @@ public final class WorldCreation extends javax.swing.JFrame {
         loaded = true;
         panel_Mainpanel.revalidate();
         panel_Mainpanel.repaint();
-        linebreak(1);
+        linebreak(2);
+
+        printWorldInfo();
 
     }
 
@@ -451,7 +440,7 @@ public final class WorldCreation extends javax.swing.JFrame {
     // <editor-fold desc="tile generation stuff (biomes, settlements, generation)">
     public void GenerateWorld() {
 
-        tempTest();
+        printWorldInfo();
 
         // -----------------------------------------------------------------------------------------------------------
         while (true) {
@@ -1223,6 +1212,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                     && citiesGenerated >= cities
                     && townsGenerated >= towns
                     && villagesGenerated >= villages) {
+                System.out.println("[Generation Successful]");
                 System.out.println("River Sources Generated: " + riverSourcesGenerated + " / " + riverSources);
                 System.out.println("Forests Generated: " + forestsGenerated + " / " + forestSources);
                 System.out.println("Cities Generated: " + citiesGenerated + " / " + cities);
@@ -1233,7 +1223,7 @@ public final class WorldCreation extends javax.swing.JFrame {
 
             } else {
 
-                System.out.println("Regenerating");
+                System.out.println("[Generation Failed]");
                 if (riverSourcesGenerated < riverSources) {
                     System.out.println("River Sources Generated: " + riverSourcesGenerated + " / " + riverSources);
                 } else if (forestsGenerated < forestSources) {
@@ -1289,7 +1279,9 @@ public final class WorldCreation extends javax.swing.JFrame {
 
     }
 
-    private void tempTest() {
+    private void printWorldInfo() {
+        System.out.println("[World Info]");
+        
         System.out.println("cities: " + cities);
         System.out.println("towns: " + towns);
         System.out.println("villages: " + villages);
@@ -1556,7 +1548,7 @@ public final class WorldCreation extends javax.swing.JFrame {
     // loads the .json file for the settlement prefixes and suffixes and puts them into a 
     private void loadSettlementNames() {
 
-        try (FileReader reader = new FileReader("src\\ProjectOuroboros\\SettlementNames.json")) {
+        try (FileReader reader = new FileReader("src\\ProjectOuroboros\\Data\\SettlementNames.json")) {
 
             System.out.println("[Loading Settlement Names]");
 
@@ -2729,64 +2721,65 @@ public final class WorldCreation extends javax.swing.JFrame {
 
         }
 
-        linebreak(1);
+        linebreak(0);
     }
     // </editor-fold>
     // -----------------------------------------------------------------------------------------------------------
 
     // -----------------------------------------------------------------------------------------------------------
     // <editor-fold desc="saving/ loading worlds">
-    // opens the action menu for saveing
+    // opens the action menu for saving
     private void button_SaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_SaveActionPerformed
 
         parseLoadedWorldsArray();
         openSaveWorldsTable("save");
 
-        linebreak(2);
-
     }//GEN-LAST:event_button_SaveActionPerformed
 
+    // opens the action menu for loading
     private void button_LoadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_LoadActionPerformed
 
         parseLoadedWorldsArray();
         openSaveWorldsTable("load");
 
-        linebreak(2);
-
     }//GEN-LAST:event_button_LoadActionPerformed
 
-    // loads the Jtable
+    // loads the Jtable using the loadedWorldsArray
     private void openSaveWorldsTable(String saveLoadAction) {
 
         panel_SavedWorlds.setVisible(true);
         DefaultTableModel savedWorldsTable = (DefaultTableModel) table_SavedWorlds.getModel();
         savedWorldsTable.setRowCount(0);
 
-        System.out.println("[Loading Saved Worlds]");
+        System.out.printf("[Loading Table - %s]\n", saveLoadAction);
 
-        // loads the save files and inserts them into the jtable
+        // loads the savefiles and inserts them into the table
         for (int i = 0; i < loadedWorldsArray.size(); i++) {
 
             JSONObject loadedWorldObj = (JSONObject) loadedWorldsArray.get(i);
             String loadedWorldKey = loadedWorldObj.keySet().toString().substring(1, loadedWorldObj.keySet().toString().length() - 1);
-            JSONArray loadedWorldInfoArray = (JSONArray) loadedWorldObj.get(loadedWorldKey);
 
-            // rename is broken AF
-            // gets the saved date
+            // gets the save date of the selected save file to display in the table
+            JSONArray loadedWorldInfoArray = (JSONArray) loadedWorldObj.get(loadedWorldKey);
             JSONObject loadedWorldSaveDateObj = (JSONObject) loadedWorldInfoArray.get(1);
+
+            // puts the savefile name and save date as a row in the table
             savedWorldsTable.addRow(new Object[]{(loadedWorldKey), loadedWorldSaveDateObj.get("saveDate")});
 
         }
 
+        // decides the name of the current generated world based on the size of the loadedWorldsArray
+        savefileName = savefileName == null ? "world" + (loadedWorldsArray.size() + 1) : savefileName;
+        System.out.println("Current SavefileName: " + savefileName);
+
         switch (saveLoadAction) {
-            case "save" -> {
+            case "save" ->
                 button_SaveLoadWorld.setText("Save");
-                // decides the name of the current generated world based on the size of the loadedWorldsArray
-                savefileName = savefileName == null ? "world" + (loadedWorldsArray.size() + 1) : savefileName;
-                System.out.println("savefileName: " + savefileName);
-            }
             case "load" ->
                 button_SaveLoadWorld.setText("Load");
+            default -> {
+                break;
+            }
         }
 
         listdownSaveFileNames();
@@ -2798,7 +2791,7 @@ public final class WorldCreation extends javax.swing.JFrame {
 
         try (FileWriter writer = new FileWriter(savedWorldsFilepath)) {
 
-            System.out.println("[Saving World]");
+            System.out.println("[Saving Worldfiles]");
 
             JSONObject saveWorldFile = new JSONObject();
 
@@ -2806,6 +2799,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                 switch (type) {
 
                     case "save":
+                        System.out.println("Saving as: " + savefileName);
                         // <editor-fold desc="this case saves the current world into the JSON">
                         // saves the tiles
                         saveWorldFile.put(savefileName, new JSONArray());
@@ -2919,11 +2913,11 @@ public final class WorldCreation extends javax.swing.JFrame {
                 }
             } else {
 
-                System.out.println("MASSIVE TEST");
                 saveWorldFile.put(savefileName, loadedWorldArray);
                 loadedWorldsArray.remove(saveWorldFile);
                 loadedWorldsArray.add(0, saveWorldFile);
                 writer.write(loadedWorldsArray.toJSONString());
+                System.out.println("loadedWorldsArray: " + loadedWorldsArray);
 
             }
 
@@ -2943,22 +2937,25 @@ public final class WorldCreation extends javax.swing.JFrame {
         // gets the savefile contents using the aformentioned taken key
         JSONArray loadFileContent = (JSONArray) loadWorldFile.get(loadfileNameKey);
 
-        System.out.println("Key: " + loadfileNameKey);
+//        System.out.println("Key: " + loadfileNameKey);
         System.out.println("Content: " + loadFileContent);
 
+        linebreak(0);
+
         // saves the content to the loaded world .JSON
-        try (FileWriter writer = new FileWriter("src\\ProjectOuroboros\\LoadedWorld.json")) {
+        try (FileWriter writer = new FileWriter(loadedWorldFilepath)) {
 
-            System.out.println("[Loading World]");
+            System.out.println("[Transfering Worldfile]");
 
-            JSONObject loadWorldFile = new JSONObject();
-            loadWorldFile.put("current", loadFileContent);
+            JSONObject loadWorldFileParse = new JSONObject();
+            loadWorldFileParse.put("current", loadFileContent);
 
-            writer.write(loadWorldFile.toJSONString());
+            writer.write(loadWorldFileParse.toJSONString());
 
         } catch (Exception e) {
-
         }
+
+        linebreak(0);
 
         SaveWorldSettings();
         dispose();
@@ -2967,7 +2964,7 @@ public final class WorldCreation extends javax.swing.JFrame {
         // implement the method to put the saved world in the loadedworld so that when world creation is started
         // it loads the loadedworld
 
-        linebreak(2);
+        linebreak(3);
 
     }
 
@@ -2975,19 +2972,27 @@ public final class WorldCreation extends javax.swing.JFrame {
     private static void listdownSaveFileNames() {
 
         loadedWorldFilenamesList.clear();
+        System.out.print("Savefile List: ");
         for (int savefileCount = 0; savefileCount < loadedWorldsArray.size(); savefileCount++) {
 
             JSONObject savefileName = (JSONObject) loadedWorldsArray.get(savefileCount);
             String savefileNameKey = savefileName.keySet().toString().substring(1, savefileName.keySet().toString().length() - 1);
 //            System.out.println("Savefile Name: " + savefileNameKey);
             loadedWorldFilenamesList.add(savefileNameKey);
+            System.out.printf(savefileNameKey);
+            if (savefileCount != loadedWorldsArray.size() - 1) {
+                System.out.printf(", ");
+            }
 
         }
+        System.out.println();
+
+        linebreak(0);
 
     }
 
+    // this loads the save files present in the json file
     private void parseLoadedWorldsArray() {
-        // this loads the save files present in the json file
         try (FileReader reader = new FileReader(savedWorldsFilepath)) {
 
             loadedWorldsArray = (JSONArray) parser.parse(reader);
@@ -3031,7 +3036,7 @@ public final class WorldCreation extends javax.swing.JFrame {
 
         } else {
 
-            worldPanelAction("load");
+            worldPanelAction("Load");
 
         }
 
@@ -3039,30 +3044,37 @@ public final class WorldCreation extends javax.swing.JFrame {
 
     private void button_DeleteWorldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_DeleteWorldActionPerformed
 
-        worldPanelAction("delete");
+        worldPanelAction("Delete");
 
     }//GEN-LAST:event_button_DeleteWorldActionPerformed
 
     private void button_RenameWorldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_RenameWorldActionPerformed
 
-        worldPanelAction("rename");
+        worldPanelAction("Rename");
 
     }//GEN-LAST:event_button_RenameWorldActionPerformed
 
     // helper method that receives an action (from pressing any of the specified buttons: save, delete, rename)
     // then sends that specified action to another helper method
     private void worldPanelAction(String action) {
+
         selectedRow = table_SavedWorlds.getSelectedRow();
         if (selectedRow != -1) {
+            System.out.printf("[Prompt Action Confirmation - %s]\n", action);
+
             switch (action) {
-                case "rename" ->
+                case "Rename" ->
                     saveWorldPanelButtons("Rename", true);
-                case "delete" ->
+                case "Delete" ->
                     saveWorldPanelButtons("Delete", true);
-                case "load" ->
+                case "Load" ->
                     saveWorldPanelButtons("Load", true);
             }
+
+            linebreak(0);
+
         }
+
     }
 
     // stores the name of the selected save
@@ -3078,12 +3090,13 @@ public final class WorldCreation extends javax.swing.JFrame {
         String selectedWorldText = "";
 
         if (tableRowSelected) {
-            selectedSave = table_SavedWorlds.getModel().getValueAt(selectedRow, 0).toString();
-            selectedWorldText = table_SavedWorlds.getModel().getValueAt(selectedRow, 0).toString();
+            selectedSave = selectedWorldText = table_SavedWorlds.getModel().getValueAt(selectedRow, 0).toString();
         } else {
-            selectedSave = savefileName;
-            selectedWorldText = savefileName;
+            selectedSave = selectedWorldText = savefileName;
         }
+
+        System.out.println("selectedSave: " + selectedSave);
+        System.out.println("selectedWorldText: " + selectedWorldText);
 
         switch (action) {
             case "Rename":
@@ -3140,7 +3153,7 @@ public final class WorldCreation extends javax.swing.JFrame {
         // gets the text from the world panel button that was pressed to determine the type of action taken when confirmed is pressed
         String confirmButtonText = button_Confirm.getText();
 
-        System.out.println("[Action Performed]");
+        System.out.printf("[Action Performed - %s]\n", confirmButtonText);
         System.out.println("selectedSave: " + selectedSave);
 
         OUTER:
@@ -3154,46 +3167,40 @@ public final class WorldCreation extends javax.swing.JFrame {
                     switch (confirmButtonText) {
                         // add a case that if a savefile is renamed to an already existing savefil then it overwrites it
                         case "Rename":
-
+                            System.out.println("Deleted Contents: " + loadedWorldObj.get(selectedSave));
                             loadedWorldsArray.remove(i);
-                            // work on this
                             System.out.println("Renamed Contents: " + loadedWorldObj.get(selectedSave));
-//
-//                            // creates a JSONArray of the new updated save time
+
+//                            loadedWorldObj.put("saveDate", getSavedTime());
+                            String loadfileNameKey = loadedWorldObj.keySet().toString().substring(1, loadedWorldObj.keySet().toString().length() - 1);
+                            JSONArray loadedRenameWorldArray = (JSONArray) loadedWorldObj.get(loadfileNameKey);
+                            loadedRenameWorldArray.remove(1);
                             JSONObject renamedSavedTimeObj = new JSONObject();
                             renamedSavedTimeObj.put("saveDate", getSavedTime());
-
-                            JSONArray renamedWorldSettingsArray = (JSONArray) loadedWorldObj.get(selectedSave);
-                            JSONObject renamedWorldSettingsObj = (JSONObject) renamedWorldSettingsArray.get(0);
-                            System.out.println("TEST: " + renamedWorldSettingsObj);
-
-                            JSONArray renamedSavedFileArray = new JSONArray();
-                            renamedSavedFileArray.add(0, renamedSavedTimeObj);
-                            renamedSavedFileArray.add(0, renamedWorldSettingsObj);
-                            System.out.println("Renamed Savefile: " + renamedSavedFileArray);
+                            loadedRenameWorldArray.add(1, renamedSavedTimeObj);
+                            System.out.println("Renamed Contents (Save Time Updated): " + loadedRenameWorldArray);
 
                             JSONObject renamedWorldObj = new JSONObject();
 
                             if (loadedWorldFilenamesList.contains(textfield_Rename.getText())) {
                                 // for now it does not delete the dupe
-                                renamedWorldObj.put(textfield_Rename.getText(), renamedSavedFileArray);
+                                renamedWorldObj.put(textfield_Rename.getText(), loadedRenameWorldArray);
                                 // use a for loop to search for dupe (then deletes it)
-                                for (int j = 0; j < loadedWorldsArray.size(); j++) {
-                                    JSONObject savefileNameObj = (JSONObject) loadedWorldsArray.get(j);
+                                for (int savefileDupeIndex = 0; savefileDupeIndex < loadedWorldsArray.size(); savefileDupeIndex++) {
+                                    JSONObject savefileNameObj = (JSONObject) loadedWorldsArray.get(savefileDupeIndex);
                                     String savefileNameKey = savefileNameObj.keySet().toString().substring(1, savefileNameObj.keySet().toString().length() - 1);
                                     if (savefileNameKey.equals(textfield_Rename.getText())) {
-//                                    System.out.println("SAME FILE FOUND: " + loadedWorldsArray.get(j));
-                                        loadedWorldsArray.remove(j);
+                                        System.out.println("SAME FILE FOUND: " + loadedWorldsArray.get(savefileDupeIndex));
+                                        loadedWorldsArray.remove(savefileDupeIndex);
                                     }
                                 }
                             } else {
-                                renamedWorldObj.put(textfield_Rename.getText(), renamedSavedFileArray);
+                                renamedWorldObj.put(textfield_Rename.getText(), loadedRenameWorldArray);
                             }
 
                             // adds the renamed savefile to the loadedworldsarray
                             System.out.println("renamedWorldObj: " + renamedWorldObj);
                             loadedWorldsArray.add(0, renamedWorldObj);
-
                             break;
                         case "Delete":
                             System.out.println("Deleted Contents: " + loadedWorldObj.get(selectedSave));
@@ -3217,20 +3224,28 @@ public final class WorldCreation extends javax.swing.JFrame {
 
             }
 
-            saveWorldFile("worldPanel");
-
         } else {
             label_WorldName.setText("Renamed \""
                     + selectedSave
                     + "\" to the same name.");
         }
 
-        closeWorldActions();
         linebreak(1);
+
+        saveWorldFile("worldPanel");
+        closeWorldActions();
+        openSaveWorldsTable(confirmButtonText);
 
     }//GEN-LAST:event_button_ConfirmActionPerformed
 
     private void button_CancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_CancelActionPerformed
+
+        // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+        // method this
+        String confirmButtonText = button_Confirm.getText();
+        System.out.printf("[Action Canceled - %s]\n", confirmButtonText);
+        // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+        linebreak(0);
 
         closeWorldActions();
 
@@ -3239,6 +3254,7 @@ public final class WorldCreation extends javax.swing.JFrame {
     // closes the confirm/ world actions panel
     private void closeWorldActions() {
 
+        textfield_Rename.setText("");
         panel_WorldActions.setVisible(false);
         table_SavedWorlds.clearSelection();
         table_SavedWorlds.setEnabled(true);
@@ -3304,28 +3320,28 @@ public final class WorldCreation extends javax.swing.JFrame {
 
             case 0:
 
-                System.out.println("-------------");
+                System.out.println("---------------------------------------");
                 System.out.println();
                 break;
 
             case 1:
 
-                System.out.println("------------------------------");
+                System.out.println("------------------------------------------------------------------------------------------");
                 System.out.println();
                 break;
 
             case 2:
 
-                System.out.println("------------------------------");
-                System.out.println("------------------------------");
+                System.out.println("------------------------------------------------------------------------------------------");
+                System.out.println("------------------------------------------------------------------------------------------");
                 System.out.println();
                 break;
 
             case 3:
 
-                System.out.println("------------------------------");
-                System.out.println("------------------------------");
-                System.out.println("------------------------------");
+                System.out.println("------------------------------------------------------------------------------------------");
+                System.out.println("------------------------------------------------------------------------------------------");
+                System.out.println("------------------------------------------------------------------------------------------");
                 System.out.println();
                 break;
 

@@ -2,6 +2,9 @@
  future:
  • add dynamic scaling to every UI element
 
+ suggestions:
+ • increase spawn rate of forest by randomizing river sources
+
  unique:
       - replayability
 
@@ -72,8 +75,7 @@
 // ------------------------------------------------------------------------------------------------------------
 
  do:
- • world save/ load system
- • save multiple worlds
- • put the json files in a seperate folder
+ • optimize the output print stuff
  • optimize the loading stuff
- 
+ • rename the variables
+ • character creation screen
