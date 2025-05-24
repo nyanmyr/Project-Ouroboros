@@ -76,6 +76,7 @@ public final class WorldCreation extends javax.swing.JFrame {
 
     Random randomizer = new Random();
 
+    //
     int tileScale;
     float zoomScale = 2;
     float zoomScaleMax = 3;
@@ -93,7 +94,7 @@ public final class WorldCreation extends javax.swing.JFrame {
 
     boolean loaded = false;
 
-    final String worldSettingsFilepath = "src\\ProjectOuroboros\\Data\\WorldSettings.json";
+    final String generateWorldSettingsFilepath = "src\\ProjectOuroboros\\Data\\WorldSettings.json";
     final String savedWorldsFilepath = "src\\ProjectOuroboros\\Data\\SavedWorlds.json";
     final String loadedWorldFilepath = "src\\ProjectOuroboros\\Data\\LoadedWorld.json";
     JSONParser parser = new JSONParser();
@@ -114,7 +115,6 @@ public final class WorldCreation extends javax.swing.JFrame {
     // stores the world settings to be put on a savefile
     JSONObject worldSettings = new JSONObject();
     JSONArray loadedWorldArray = new JSONArray();
-    JSONObject loadedWorld = new JSONObject();
 
     static JSONArray loadedWorldsArray = new JSONArray();
     static List<String> loadedWorldFilenamesList = new ArrayList<>();
@@ -133,7 +133,7 @@ public final class WorldCreation extends javax.swing.JFrame {
 
         if (worldCreationType.equals("Generate")) {
 
-            //        <editor-fold desc="rescales the river sprites">
+            //        <editor-fold desc="creates rescaled versions of the river sprites">
             for (String str : directionsSpritesFilePath) {
 
                 Icon icon = new javax.swing.ImageIcon(getClass().getResource(str));
@@ -145,7 +145,7 @@ public final class WorldCreation extends javax.swing.JFrame {
             //      </editor-fold>
 
             // loads the json files
-            LoadWorldSettings();
+            LoadWorldSettings("Generate");
             loadSettlementNames();
 
             // add a condition to check if generate or load world here
@@ -153,10 +153,13 @@ public final class WorldCreation extends javax.swing.JFrame {
 
         } else if (worldCreationType.equals("Load")) {
 
+            LoadWorldSettings("Load");
+
             LoadWorld();
 
         }
 
+        // generate the ocean tiles
         for (int y = -12; y <= yMax + 13; y++) {
 
             for (int x = -12; x <= xMax + 13; x++) {
@@ -295,6 +298,8 @@ public final class WorldCreation extends javax.swing.JFrame {
 //        System.out.println("Size: " + panel_Mainpanel.getComponents().length); check the size of the mainpanel
     }
 
+    // -----------------------------------------------------------------------------------------------------------
+    // <editor-fold desc="tile generation/ loading stuff (biomes, settlements, generation, loading)">
     private void LoadWorld() {
 
         // loads the world file and puts it into loadedWorld object
@@ -304,125 +309,26 @@ public final class WorldCreation extends javax.swing.JFrame {
 
             JSONObject loadCurrent = (JSONObject) parser.parse(reader);
             JSONArray loadCurrentArray = (JSONArray) loadCurrent.get("current");
-            loadedWorldArray = loadCurrentArray;
 
-            JSONObject loadWorldSettingsObj = (JSONObject) loadCurrentArray.get(0); // gets
-            JSONArray loadWorldSettingsArray = (JSONArray) loadWorldSettingsObj.get("worldSettings");
+            linebreak(0);
 
-            worldSettings.put("worldSettings", loadWorldSettingsArray);
-
-            // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-            // turn this into a method (optimize)
-            // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-            JSONObject loadTileScale = (JSONObject) loadWorldSettingsArray.get(0);
-            String tileScaleStr = (String) loadTileScale.get("tileScale");
-            slider_TileScale.setValue(Integer.parseInt(tileScaleStr));
-            tileScale = Integer.parseInt(tileScaleStr);
-            System.out.println("tileScale: " + tileScaleStr);
-
-            // sets the x and y size of the map according to the savedworld info
-            JSONObject loadMapSize = (JSONObject) loadWorldSettingsArray.get(1);
-            String mapSizeStr = (String) loadMapSize.get("mapsize");
-            slider_MapSize.setValue(Integer.parseInt(mapSizeStr));
-            mapSize = Integer.parseInt(mapSizeStr) + 2;
-            xMax = mapSize * 12 + 1;
-            yMax = (int) (mapSize * 6 + 3);
-            xMaxArray = new int[xMax + 1];
-            yMaxArray = new int[yMax + 1];
-            coordinatesX = xMaxArray.length / 2;
-            coordinatesY = yMaxArray.length / 2;
-            System.out.println("mapSize: " + mapSize);
-
-            // turn these into methods
-            // loads the settlement names array
-            JSONObject loadSettlementsTileMapObj = (JSONObject) loadCurrentArray.get(2); // gets
-            JSONArray loadSettlementsTileMapArray = (JSONArray) loadSettlementsTileMapObj.get("settlementsTileMap");
-            System.out.println("loadSettlementsTileMapArray: " + loadSettlementsTileMapArray);
-
-            // loads the river tiles array
-            JSONObject loadRiverTileMapObj = (JSONObject) loadCurrentArray.get(3); // gets
-            JSONArray loadRiverTileMapArray = (JSONArray) loadRiverTileMapObj.get("riverTileMap");
-            System.out.println("loadRiverTileMapArray: " + loadRiverTileMapArray);
-
-            // loads the river tiles array
-            JSONObject loadtileMapObj = (JSONObject) loadCurrentArray.get(4); // gets
-            JSONArray loadtileMapArray = (JSONArray) loadtileMapObj.get("tileMap");
-            System.out.println("loadtileMapArray: " + loadtileMapArray);
-
-            // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-            // turn this into a method (optimize)
-            // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-            // individually adds the settlements w/ names to the settlement and settlement names tilemap (WIP)
-            // now put these into the tilemap
-            for (Object loadedTile : loadtileMapArray) {
-
-                JSONObject loadedTileObj = (JSONObject) loadedTile;
-                String loadedTileKey = loadedTileObj.keySet().toString().substring(1, loadedTileObj.keySet().toString().length() - 1);
-                JSONObject loadedTileInfoObj = (JSONObject) loadedTileObj.get(loadedTileKey);
-                String tileCoordinates = "x" + loadedTileInfoObj.get("x: ") + "y" + loadedTileInfoObj.get("y: ");
-//                System.out.println("Coordinates: " + tileCoordinates);
-//                System.out.println("Biomes: " + loadedTileInfoObj.get("biome: "));
-//                System.out.println();
-
-                JLabel tile = generateProtoTile(tileCoordinates);
-                selectBiome(tile, loadedTileInfoObj.get("biome: ").toString());
-                panel_Mainpanel.add(tile);
-                panel_Mainpanel.setComponentZOrder(tile, 0);
-                tile.setVisible(true);
-                tileMap.put(tileCoordinates, tile);
+            for (int tileMapParsedIndex = 4; tileMapParsedIndex > 1; tileMapParsedIndex--) {
+//                System.out.println("tileMapParsed: " + tileMapParsedIndex);
+                JSONObject loadTempTileMapObj = (JSONObject) loadCurrentArray.get(tileMapParsedIndex);
+                switch (tileMapParsedIndex) {
+                    case 2 -> {
+                        LoadWorldTileMap("settlementsTileMap", (JSONArray) loadTempTileMapObj.get("settlementsTileMap"), settlementsTileMap);
+                    }
+                    case 3 -> {
+                        LoadWorldTileMap("riverTileMap", (JSONArray) loadTempTileMapObj.get("riverTileMap"), riverTileMap);
+                    }
+                    case 4 -> {
+                        LoadWorldTileMap("tileMap", (JSONArray) loadTempTileMapObj.get("tileMap"), tileMap);
+                    }
+                }
 
             }
-            System.out.println("tileMap: " + tileMap.size());
 
-            for (Object loadedRiverTile : loadRiverTileMapArray) {
-
-                JSONObject loadedRiverTileObj = (JSONObject) loadedRiverTile;
-                String loadedRiverTileKey = loadedRiverTileObj.keySet().toString().substring(1, loadedRiverTileObj.keySet().toString().length() - 1);
-                JSONObject loadedRiverTileInfoObj = (JSONObject) loadedRiverTileObj.get(loadedRiverTileKey);
-                String tileCoordinates = "x" + loadedRiverTileInfoObj.get("x: ") + "y" + loadedRiverTileInfoObj.get("y: ");
-//                System.out.println("Coordinates: " + tileCoordinates);
-//                System.out.println("Type: " + loadedRiverTileInfoObj.get("type: "));
-//                System.out.println();
-
-                JLabel riverTile = generateProtoTile(tileCoordinates);
-                selectBiome(riverTile, loadedRiverTileInfoObj.get("type: ").toString());
-                panel_Mainpanel.add(riverTile);
-                panel_Mainpanel.setComponentZOrder(riverTile, 0);
-                riverTile.setVisible(true);
-                riverTileMap.put(tileCoordinates, riverTile);
-
-            }
-            System.out.println("riverTileMap: " + riverTileMap.size());
-
-            for (Object loadedSettlementTile : loadSettlementsTileMapArray) {
-
-                JSONObject loadedSettlementTileObj = (JSONObject) loadedSettlementTile;
-                String loadedSettlementTileKey = loadedSettlementTileObj.keySet().toString().substring(1, loadedSettlementTileObj.keySet().toString().length() - 1);
-                JSONObject loadedSettlementTileInfoObj = (JSONObject) loadedSettlementTileObj.get(loadedSettlementTileKey);
-                String tileCoordinates = "x" + loadedSettlementTileInfoObj.get("x: ") + "y" + loadedSettlementTileInfoObj.get("y: ");
-//                System.out.println("Coordinates: " + tileCoordinates);
-//                System.out.println("Name: " + loadedSettlementTileInfoObj.get("name: "));
-//                System.out.println("Type: " + loadedSettlementTileInfoObj.get("type: "));
-//                System.out.println();
-
-                // puts the name
-                JLabel settlementTileName = generateProtoTile(tileCoordinates);
-                settlementTileName.setText(loadedSettlementTileInfoObj.get("name: ").toString());
-                settlementTileName.setName(loadedSettlementTileInfoObj.get("name: ").toString());
-                panel_Mainpanel.add(settlementTileName);
-                settlementsNameTileMap.put(tileCoordinates, settlementTileName);
-
-                JLabel settlementTile = generateProtoTile(tileCoordinates);
-                selectBiome(settlementTile, loadedSettlementTileInfoObj.get("type: ").toString());
-                panel_Mainpanel.add(settlementTile);
-                panel_Mainpanel.setComponentZOrder(settlementTile, 0);
-                settlementTile.setVisible(true);
-                settlementsTileMap.put(tileCoordinates, settlementTile);
-
-            }
-            System.out.println("settlementsTileMap: " + settlementsTileMap.size());
-
-//            System.out.println("settlementsNameTileMap: " + settlementsNameTileMap.size());
         } catch (Exception e) {
 
         }
@@ -430,15 +336,54 @@ public final class WorldCreation extends javax.swing.JFrame {
         loaded = true;
         panel_Mainpanel.revalidate();
         panel_Mainpanel.repaint();
-        linebreak(2);
+        linebreak(3);
 
         printWorldInfo();
 
     }
 
-    // -----------------------------------------------------------------------------------------------------------
-    // <editor-fold desc="tile generation stuff (biomes, settlements, generation)">
-    public void GenerateWorld() {
+    // optimized way of loading the tilemap arrays of the loaded world to load each individual tile
+    private void LoadWorldTileMap(String loadTileMapName, JSONArray loadTileMapArray, HashMap<String, JLabel> loadTileMapType) {
+
+        System.out.printf("[Loading TileMap - %s]\n", loadTileMapName);
+
+        for (Object loadedTile : loadTileMapArray) {
+
+            JSONObject loadedTileObj = (JSONObject) loadedTile;
+            String loadedTileKey = loadedTileObj.keySet().toString().substring(1, loadedTileObj.keySet().toString().length() - 1);
+            JSONObject loadedTileInfoObj = (JSONObject) loadedTileObj.get(loadedTileKey);
+            String tileCoordinates = "x" + loadedTileInfoObj.get("x: ") + "y" + loadedTileInfoObj.get("y: ");
+
+            String findTileInfo = "biome: ";
+
+            if (loadTileMapName.equals("settlementsTileMap") || loadTileMapName.equals("riverTileMap")) {
+                if (loadTileMapName.equals("settlementsTileMap")) {
+                    JLabel settlementTileName = generateProtoTile(tileCoordinates);
+                    settlementTileName.setText(loadedTileInfoObj.get("name: ").toString());
+                    settlementTileName.setName(loadedTileInfoObj.get("name: ").toString());
+                    panel_Mainpanel.add(settlementTileName);
+                    settlementsNameTileMap.put(tileCoordinates, settlementTileName);
+                }
+                findTileInfo = "type: ";
+            }
+
+//            System.out.println("Coordinates: " + tileCoordinates);
+//            System.out.println("Name: " + loadedTileInfoObj.get("name: "));
+//            System.out.println("Biome/ Type: " + loadedTileInfoObj.get(findTileInfo));
+//            System.out.println();
+            JLabel tile = generateProtoTile(tileCoordinates);
+            selectBiome(tile, loadedTileInfoObj.get(findTileInfo).toString());
+            panel_Mainpanel.add(tile);
+            panel_Mainpanel.setComponentZOrder(tile, 0);
+            tile.setVisible(true);
+            loadTileMapType.put(tileCoordinates, tile);
+
+        }
+        System.out.printf("%s Size: %s\n", loadTileMapName, loadTileMapType.size());
+
+    }
+
+    private void GenerateWorld() {
 
         printWorldInfo();
 
@@ -1197,7 +1142,7 @@ public final class WorldCreation extends javax.swing.JFrame {
 
                     if (generateSettlement) {
                         tileMapAddition(settlementTile, randomTileCoordinates, settlementsTileMap);
-                        generateSettlementName(randomTileCoordinates, settlementNameTile);
+                        generateSettlementName(randomTileCoordinates);
                     }
                     loops++;
 
@@ -1218,7 +1163,7 @@ public final class WorldCreation extends javax.swing.JFrame {
                 System.out.println("Cities Generated: " + citiesGenerated + " / " + cities);
                 System.out.println("Towns Generated: " + townsGenerated + " / " + towns);
                 System.out.println("Villages Generated: " + villagesGenerated + " / " + villages);
-                linebreak(2);
+                linebreak(3);
                 break;
 
             } else {
@@ -1281,7 +1226,7 @@ public final class WorldCreation extends javax.swing.JFrame {
 
     private void printWorldInfo() {
         System.out.println("[World Info]");
-        
+
         System.out.println("cities: " + cities);
         System.out.println("towns: " + towns);
         System.out.println("villages: " + villages);
@@ -1304,16 +1249,16 @@ public final class WorldCreation extends javax.swing.JFrame {
         linebreak(1);
     }
 
-    public void tileMapAddition(JLabel newTile, String tileCoordinates, HashMap<String, JLabel> tileMap) {
+    private void tileMapAddition(JLabel additionGivenTile, String additionGivenTileCoordinates, HashMap<String, JLabel> additionGivenTileMap) {
 
-        panel_Mainpanel.add(newTile);
-        panel_Mainpanel.setComponentZOrder(newTile, 0);
-        newTile.setVisible(true);
-        tileMap.put(tileCoordinates, newTile);
+        panel_Mainpanel.add(additionGivenTile);
+        panel_Mainpanel.setComponentZOrder(additionGivenTile, 0);
+        additionGivenTile.setVisible(true);
+        additionGivenTileMap.put(additionGivenTileCoordinates, additionGivenTile);
 
     }
 
-    private JLabel generateProtoTile(String tileCoordinates) {
+    private JLabel generateProtoTile(String givenTileMapCoordinates) {
 
         JLabel label = new javax.swing.JLabel();
 
@@ -1325,8 +1270,8 @@ public final class WorldCreation extends javax.swing.JFrame {
         label.setForeground(new java.awt.Color(0, 0, 0));
         label.setOpaque(true);
 
-        label.setText(tileCoordinates);
-        label.setName(tileCoordinates);
+        label.setText(givenTileMapCoordinates);
+        label.setName(givenTileMapCoordinates);
 
         label.setBorder(javax.swing.BorderFactory.createCompoundBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED, java.awt.Color.lightGray, java.awt.Color.gray, java.awt.Color.darkGray, java.awt.Color.black), javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0))));
 
@@ -1334,133 +1279,133 @@ public final class WorldCreation extends javax.swing.JFrame {
 
     }
 
-    private JLabel selectBiome(JLabel label, String biome) {
+    private JLabel selectBiome(JLabel givenTile, String biomeSelected) {
 
-        switch (biome) {
+        switch (biomeSelected) {
             case "Oc":
-                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-                label.setBackground(new java.awt.Color(0, 0, 100));
-                label.setForeground(new java.awt.Color(255, 255, 255));
-                label.setText("Oc");
-                label.setName("Oc");
+                givenTile.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                givenTile.setBackground(new java.awt.Color(0, 0, 100));
+                givenTile.setForeground(new java.awt.Color(255, 255, 255));
+                givenTile.setText("Oc");
+                givenTile.setName("Oc");
                 break;
             case "Sh":
             case "Shore":
-                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-                label.setBackground(new java.awt.Color(0, 50, 205));
-                label.setForeground(new java.awt.Color(255, 255, 255));
-                label.setText("Sh");
-                label.setName("Shore");
+                givenTile.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                givenTile.setBackground(new java.awt.Color(0, 50, 205));
+                givenTile.setForeground(new java.awt.Color(255, 255, 255));
+                givenTile.setText("Sh");
+                givenTile.setName("Shore");
                 break;
             case "Be":
             case "Beach":
-                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-                label.setBackground(new java.awt.Color(255, 255, 153));
-                label.setForeground(new java.awt.Color(0, 0, 0));
-                label.setText("Be");
-                label.setName("Beach");
+                givenTile.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                givenTile.setBackground(new java.awt.Color(255, 255, 153));
+                givenTile.setForeground(new java.awt.Color(0, 0, 0));
+                givenTile.setText("Be");
+                givenTile.setName("Beach");
                 break;
             case "Pl":
             case "Plain":
-                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-                label.setBackground(new java.awt.Color(22, 109, 22));
-                label.setForeground(new java.awt.Color(0, 0, 0));
-                label.setText("Pl");
-                label.setName("Plain");
+                givenTile.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                givenTile.setBackground(new java.awt.Color(22, 109, 22));
+                givenTile.setForeground(new java.awt.Color(0, 0, 0));
+                givenTile.setText("Pl");
+                givenTile.setName("Plain");
                 break;
             case "Mt":
-                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-                label.setBackground(new java.awt.Color(20, 20, 26));
-                label.setForeground(new java.awt.Color(255, 255, 255));
-                label.setText("Mt");
-                label.setName("Mt");
+                givenTile.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                givenTile.setBackground(new java.awt.Color(20, 20, 26));
+                givenTile.setForeground(new java.awt.Color(255, 255, 255));
+                givenTile.setText("Mt");
+                givenTile.setName("Mt");
                 break;
             case "Ht":
             case "Hill":
-                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-                label.setBackground(new java.awt.Color(40, 40, 46));
-                label.setForeground(new java.awt.Color(0, 0, 0));
-                label.setText("Ht");
-                label.setName("Hill");
+                givenTile.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                givenTile.setBackground(new java.awt.Color(40, 40, 46));
+                givenTile.setForeground(new java.awt.Color(0, 0, 0));
+                givenTile.setText("Ht");
+                givenTile.setName("Hill");
                 break;
             case "Lk":
             case "Lake":
-                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-                label.setBackground(new java.awt.Color(15, 80, 245));
-                label.setForeground(new java.awt.Color(255, 255, 255));
-                label.setText("Lk");
-                label.setName("Lake");
+                givenTile.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                givenTile.setBackground(new java.awt.Color(15, 80, 245));
+                givenTile.setForeground(new java.awt.Color(255, 255, 255));
+                givenTile.setText("Lk");
+                givenTile.setName("Lake");
                 break;
             case "Rs":
-                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-                label.setBackground(new java.awt.Color(10, 50, 205));
-                label.setForeground(new java.awt.Color(0, 0, 0));
-                label.setText("Rs");
-                label.setName("Rs");
+                givenTile.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                givenTile.setBackground(new java.awt.Color(10, 50, 205));
+                givenTile.setForeground(new java.awt.Color(0, 0, 0));
+                givenTile.setText("Rs");
+                givenTile.setName("Rs");
                 break;
             case "Rv":
             case "River":
-                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-                label.setBackground(new java.awt.Color(10, 50, 255));
-                label.setForeground(new java.awt.Color(0, 0, 0));
-                label.setName("River");
+                givenTile.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                givenTile.setBackground(new java.awt.Color(10, 50, 255));
+                givenTile.setForeground(new java.awt.Color(0, 0, 0));
+                givenTile.setName("River");
                 break;
             case "Fr":
             case "Forest":
-                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-                label.setBackground(new java.awt.Color(22, 44, 22));
-                label.setForeground(new java.awt.Color(255, 255, 255));
-                label.setText("Fr");
-                label.setName("Forest");
+                givenTile.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                givenTile.setBackground(new java.awt.Color(22, 44, 22));
+                givenTile.setForeground(new java.awt.Color(255, 255, 255));
+                givenTile.setText("Fr");
+                givenTile.setName("Forest");
                 break;
             case "Frr":
-                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-                label.setBackground(new java.awt.Color(22, 44, 22));
-                label.setForeground(new java.awt.Color(255, 255, 255));
-                label.setText("Frr");
-                label.setName("Frr");
+                givenTile.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                givenTile.setBackground(new java.awt.Color(22, 44, 22));
+                givenTile.setForeground(new java.awt.Color(255, 255, 255));
+                givenTile.setText("Frr");
+                givenTile.setName("Frr");
                 break;
             case "Ca":
             case "Capital":
-                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-                label.setBackground(new java.awt.Color(255, 205, 44));
-                label.setForeground(new java.awt.Color(0, 0, 0));
-                label.setText("Ca");
-                label.setName("Capital");
+                givenTile.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                givenTile.setBackground(new java.awt.Color(255, 205, 44));
+                givenTile.setForeground(new java.awt.Color(0, 0, 0));
+                givenTile.setText("Ca");
+                givenTile.setName("Capital");
                 break;
             case "Ct":
             case "City":
-                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-                label.setBackground(new java.awt.Color(155, 105, 44));
-                label.setForeground(new java.awt.Color(0, 0, 0));
-                label.setText("Ct");
-                label.setName("City");
+                givenTile.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                givenTile.setBackground(new java.awt.Color(155, 105, 44));
+                givenTile.setForeground(new java.awt.Color(0, 0, 0));
+                givenTile.setText("Ct");
+                givenTile.setName("City");
                 break;
             case "Tw":
             case "Town":
-                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-                label.setBackground(new java.awt.Color(66, 44, 22));
-                label.setForeground(new java.awt.Color(0, 0, 0));
-                label.setText("Tw");
-                label.setName("Town");
+                givenTile.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                givenTile.setBackground(new java.awt.Color(66, 44, 22));
+                givenTile.setForeground(new java.awt.Color(0, 0, 0));
+                givenTile.setText("Tw");
+                givenTile.setName("Town");
                 break;
             case "Vl":
             case "Village":
-                label.setFont(new java.awt.Font("Segoe UI", 0, 24));
-                label.setBackground(new java.awt.Color(44, 22, 11));
-                label.setForeground(new java.awt.Color(0, 0, 0));
-                label.setText("Vl");
-                label.setName("Village");
+                givenTile.setFont(new java.awt.Font("Segoe UI", 0, 24));
+                givenTile.setBackground(new java.awt.Color(44, 22, 11));
+                givenTile.setForeground(new java.awt.Color(0, 0, 0));
+                givenTile.setText("Vl");
+                givenTile.setName("Village");
                 break;
             default:
                 break;
         }
 
-        return label;
+        return givenTile;
 
     }
 
-    public void generateSettlementName(String tileCoordinates, JLabel settlementNameTile) {
+    private void generateSettlementName(String givenSettlementNameCoordinates) {
 
         JSONObject biomeObj;
         JSONArray prefixArray;
@@ -1473,10 +1418,10 @@ public final class WorldCreation extends javax.swing.JFrame {
 
         while (!isGeneratedName) {
 
-            String biome = tileMap.get(tileCoordinates).getName();
+            String biome = tileMap.get(givenSettlementNameCoordinates).getName();
             try {
-                if (riverTileMap.get(tileCoordinates).getName().equals("River")) {
-                    biome = riverTileMap.get(tileCoordinates).getName();
+                if (riverTileMap.get(givenSettlementNameCoordinates).getName().equals("River")) {
+                    biome = riverTileMap.get(givenSettlementNameCoordinates).getName();
                 }
             } catch (Exception e) {
 
@@ -1537,11 +1482,11 @@ public final class WorldCreation extends javax.swing.JFrame {
 
         }
 
-        JLabel settlementTile = generateProtoTile(tileCoordinates);
+        JLabel settlementTile = generateProtoTile(givenSettlementNameCoordinates);
         settlementTile.setText(generatedName);
         settlementTile.setName(generatedName);
         panel_Mainpanel.add(settlementTile);
-        settlementsNameTileMap.put(tileCoordinates, settlementTile);
+        settlementsNameTileMap.put(givenSettlementNameCoordinates, settlementTile);
 
     }
 
@@ -2578,23 +2523,39 @@ public final class WorldCreation extends javax.swing.JFrame {
 
     }//GEN-LAST:event_button_GenerateActionPerformed
 
-    private void LoadWorldSettings() {
+    private void LoadWorldSettings(String worldSettingsLoadForm) {
 
-        try (FileReader reader = new FileReader(worldSettingsFilepath)) {
+        String worldSettingsFilePath = "";
 
-            System.out.println("[Loading World Settings]");
+        switch (worldSettingsLoadForm) {
+            case "Generate" -> {
+                worldSettingsFilePath = generateWorldSettingsFilepath;
+            }
+            case "Load" -> {
+                worldSettingsFilePath = loadedWorldFilepath;
+            }
+        }
+
+        try (FileReader reader = new FileReader(worldSettingsFilePath)) {
+
+            System.out.printf("[Loading World Settings - %s]\n", worldSettingsLoadForm);
 
             JSONObject loadCurrent = (JSONObject) parser.parse(reader);
             JSONArray loadCurrentArray = (JSONArray) loadCurrent.get("current");
-            worldSettings.put("worldSettings", loadCurrentArray);
 
-            JSONObject tileScaleObj = (JSONObject) loadCurrentArray.get(0);
+            JSONObject loadWorldSettingsObj = (JSONObject) loadCurrentArray.get(0);
+            JSONArray loadWorldSettingsArray = (JSONArray) loadWorldSettingsObj.get("worldSettings");
+            worldSettings.put("worldSettings", loadWorldSettingsArray);
+
+            loadedWorldArray = loadCurrentArray;
+
+            JSONObject tileScaleObj = (JSONObject) loadWorldSettingsArray.get(0);
             String tileScaleStr = (String) tileScaleObj.get("tileScale");
             slider_TileScale.setValue(Integer.parseInt(tileScaleStr));
             tileScale = Integer.parseInt(tileScaleStr);
             System.out.println("tileScale: " + tileScale);
 
-            JSONObject mapSizeObj = (JSONObject) loadCurrentArray.get(1);
+            JSONObject mapSizeObj = (JSONObject) loadWorldSettingsArray.get(1);
             String mapSizeStr = (String) mapSizeObj.get("mapsize");
             slider_MapSize.setValue(Integer.parseInt(mapSizeStr));
             mapSize = Integer.parseInt(mapSizeStr) + 2;
@@ -2606,7 +2567,7 @@ public final class WorldCreation extends javax.swing.JFrame {
             coordinatesY = yMaxArray.length / 2;
             System.out.println("mapSize: " + mapSize);
 
-            JSONObject populationObj = (JSONObject) loadCurrentArray.get(2);
+            JSONObject populationObj = (JSONObject) loadWorldSettingsArray.get(2);
             String populationStr = (String) populationObj.get("population");
             slider_Population.setValue((int) Float.parseFloat(populationStr));
             population = Float.parseFloat(populationStr);
@@ -2615,106 +2576,112 @@ public final class WorldCreation extends javax.swing.JFrame {
             villages = (int) (towns * 1.6) + (int) (mapSize * 0.8) + (int) (mapSize * 0.4) + ((int) (mapSize * 0.2) * 2);
             System.out.println("population: " + population);
 
-            JSONObject mountainSpawnRateObj = (JSONObject) loadCurrentArray.get(3);
+            JSONObject mountainSpawnRateObj = (JSONObject) loadWorldSettingsArray.get(3);
             String mountainSpawnRateStr = (String) mountainSpawnRateObj.get("mountainSpawnRate");
             slider_MountainSpawnRate.setValue(Integer.parseInt(mountainSpawnRateStr));
             mountainSpawnRate = mapSize * ((Integer.parseInt(mountainSpawnRateStr) * 2));
             System.out.println("mountainSpawnRate: " + mountainSpawnRate);
 
-            JSONObject lakeSpawnRateObj = (JSONObject) loadCurrentArray.get(4);
+            JSONObject lakeSpawnRateObj = (JSONObject) loadWorldSettingsArray.get(4);
             String lakeSpawnRateStr = (String) lakeSpawnRateObj.get("lakeSpawnRate");
             slider_LakeSpawnRate.setValue(Integer.parseInt(lakeSpawnRateStr));
             lakeSpawnRate = mapSize * ((Integer.parseInt(lakeSpawnRateStr) * 2));
             System.out.println("lakeSpawnRate: " + lakeSpawnRate);
 
-            JSONObject forestSpawnRateObj = (JSONObject) loadCurrentArray.get(5);
+            JSONObject forestSpawnRateObj = (JSONObject) loadWorldSettingsArray.get(5);
             String forestSpawnRateStr = (String) forestSpawnRateObj.get("forestSpawnRate");
             slider_ForestSpawnRate.setValue(Integer.parseInt(forestSpawnRateStr));
             forestSpawnRate = mapSize * ((Integer.parseInt(forestSpawnRateStr) * 2));
             System.out.println("forestSpawnRate: " + forestSpawnRate);
 
-            JSONObject riverSourcesObj = (JSONObject) loadCurrentArray.get(6);
+            JSONObject riverSourcesObj = (JSONObject) loadWorldSettingsArray.get(6);
             String riverSourcesStr = (String) riverSourcesObj.get("riverSources");
             slider_RiverSources.setValue(Integer.parseInt(riverSourcesStr));
             riverSources = mapSize + (mapSize / (Integer.parseInt(riverSourcesStr))) - (Integer.parseInt(riverSourcesStr) / 6);
             System.out.println("riverSources: " + riverSources);
 
-            JSONObject forestSourcesObj = (JSONObject) loadCurrentArray.get(7);
+            JSONObject forestSourcesObj = (JSONObject) loadWorldSettingsArray.get(7);
             String forestSourcesStr = (String) forestSourcesObj.get("forestSources");
             slider_ForestSources.setValue(Integer.parseInt(forestSourcesStr));
             forestSources = mapSize + (mapSize / (Integer.parseInt(forestSourcesStr))) - (Integer.parseInt(forestSourcesStr) / 6);
             System.out.println("forestSources: " + forestSources);
 
-            JSONObject hillBranchesObj = (JSONObject) loadCurrentArray.get(8);
+            JSONObject hillBranchesObj = (JSONObject) loadWorldSettingsArray.get(8);
             String hillBranchesStr = (String) hillBranchesObj.get("hillBranches");
             slider_HillBranches.setValue(Integer.parseInt(hillBranchesStr));
             hillBranches = mapSize + (mapSize / (Integer.parseInt(hillBranchesStr))) - (Integer.parseInt(hillBranchesStr) / 6);
             System.out.println("hillBranches: " + hillBranches);
 
-            JSONObject forestBranchesObj = (JSONObject) loadCurrentArray.get(9);
+            JSONObject forestBranchesObj = (JSONObject) loadWorldSettingsArray.get(9);
             String forestBranchesStr = (String) forestBranchesObj.get("forestBranches");
             slider_ForestBranches.setValue(Integer.parseInt(forestBranchesStr));
             forestBranches = mapSize + (mapSize / (Integer.parseInt(forestBranchesStr))) - (Integer.parseInt(forestBranchesStr) / 6);
             System.out.println("forestBranches: " + forestBranches);
 
         } catch (Exception e) {
-
+            System.out.println("Error: " + e.getMessage());
         }
 
-        linebreak(1);
+        linebreak(3);
     }
 
     private void SaveWorldSettings() {
 
-        try (FileWriter writer = new FileWriter(worldSettingsFilepath)) {
+        try (FileWriter writer = new FileWriter(generateWorldSettingsFilepath)) {
 
             System.out.println("[Saving World Settings]");
 
             JSONObject saveCurrent = new JSONObject();
             saveCurrent.put("current", new JSONArray());
-            JSONArray saveCurrentArray = (JSONArray) saveCurrent.get("current");
+
+            JSONArray saveWorldSettingsArray = new JSONArray();
+            JSONObject saveWorldSettingsObj = new JSONObject();
 
             JSONObject saveTileScale = new JSONObject();
             saveTileScale.put("tileScale", Integer.toString(slider_TileScale.getValue()));
-            saveCurrentArray.add(0, saveTileScale);
+            saveWorldSettingsArray.add(0, saveTileScale);
 
             JSONObject saveMapSize = new JSONObject();
             saveMapSize.put("mapsize", Integer.toString(slider_MapSize.getValue()));
-            saveCurrentArray.add(1, saveMapSize);
+            saveWorldSettingsArray.add(1, saveMapSize);
 
             JSONObject savePopulation = new JSONObject();
             savePopulation.put("population", Float.toString(slider_Population.getValue()));
-            saveCurrentArray.add(2, savePopulation);
+            saveWorldSettingsArray.add(2, savePopulation);
 
             JSONObject saveMountainSpawnRate = new JSONObject();
             saveMountainSpawnRate.put("mountainSpawnRate", Integer.toString(slider_MountainSpawnRate.getValue()));
-            saveCurrentArray.add(3, saveMountainSpawnRate);
+            saveWorldSettingsArray.add(3, saveMountainSpawnRate);
 
             JSONObject saveLakeSpawnRate = new JSONObject();
             saveLakeSpawnRate.put("lakeSpawnRate", Integer.toString(slider_LakeSpawnRate.getValue()));
-            saveCurrentArray.add(4, saveLakeSpawnRate);
+            saveWorldSettingsArray.add(4, saveLakeSpawnRate);
 
             JSONObject saveForestSpawnRate = new JSONObject();
             saveForestSpawnRate.put("forestSpawnRate", Integer.toString(slider_ForestSpawnRate.getValue()));
-            saveCurrentArray.add(5, saveForestSpawnRate);
+            saveWorldSettingsArray.add(5, saveForestSpawnRate);
 
             JSONObject saveRiverSources = new JSONObject();
             saveRiverSources.put("riverSources", Integer.toString(slider_RiverSources.getValue()));
-            saveCurrentArray.add(6, saveRiverSources);
+            saveWorldSettingsArray.add(6, saveRiverSources);
 
             JSONObject saveForestSources = new JSONObject();
             saveForestSources.put("forestSources", Integer.toString(slider_ForestSources.getValue()));
-            saveCurrentArray.add(7, saveForestSources);
+            saveWorldSettingsArray.add(7, saveForestSources);
 
             JSONObject saveHillBranches = new JSONObject();
             saveHillBranches.put("hillBranches", Integer.toString(slider_HillBranches.getValue()));
-            saveCurrentArray.add(8, saveHillBranches);
+            saveWorldSettingsArray.add(8, saveHillBranches);
 
             JSONObject saveForestBranches = new JSONObject();
             saveForestBranches.put("forestBranches", Integer.toString(slider_ForestBranches.getValue()));
-            saveCurrentArray.add(9, saveForestBranches);
+            saveWorldSettingsArray.add(9, saveForestBranches);
 
-            saveCurrent.put("current", saveCurrentArray);
+            saveWorldSettingsObj.put("worldSettings", saveWorldSettingsArray);
+            JSONArray saveWorldSettingsArrayContainer = new JSONArray();
+            saveWorldSettingsArrayContainer.add(saveWorldSettingsObj);
+
+            saveCurrent.put("current", saveWorldSettingsArrayContainer);
             writer.write(saveCurrent.toJSONString());
 
         } catch (Exception e) {
@@ -2925,7 +2892,7 @@ public final class WorldCreation extends javax.swing.JFrame {
 
         }
 
-        linebreak(2);
+        linebreak(3);
         openSaveWorldsTable("save");
     }
 
@@ -2964,7 +2931,7 @@ public final class WorldCreation extends javax.swing.JFrame {
         // implement the method to put the saved world in the loadedworld so that when world creation is started
         // it loads the loadedworld
 
-        linebreak(3);
+        linebreak(5);
 
     }
 
@@ -3151,9 +3118,7 @@ public final class WorldCreation extends javax.swing.JFrame {
     private void button_ConfirmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_ConfirmActionPerformed
 
         // gets the text from the world panel button that was pressed to determine the type of action taken when confirmed is pressed
-        String confirmButtonText = button_Confirm.getText();
-
-        System.out.printf("[Action Performed - %s]\n", confirmButtonText);
+        String confirmButtonText = printActionDone("Cancel");
         System.out.println("selectedSave: " + selectedSave);
 
         OUTER:
@@ -3240,16 +3205,18 @@ public final class WorldCreation extends javax.swing.JFrame {
 
     private void button_CancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_CancelActionPerformed
 
-        // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-        // method this
-        String confirmButtonText = button_Confirm.getText();
-        System.out.printf("[Action Canceled - %s]\n", confirmButtonText);
-        // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+        printActionDone("Cancel");
         linebreak(0);
 
         closeWorldActions();
 
     }//GEN-LAST:event_button_CancelActionPerformed
+
+    private String printActionDone(String actionDone) {
+        String confirmButtonText = button_Confirm.getText();
+        System.out.printf("[Action %s - %s]\n", actionDone, confirmButtonText);
+        return confirmButtonText;
+    }
 
     // closes the confirm/ world actions panel
     private void closeWorldActions() {
@@ -3316,40 +3283,16 @@ public final class WorldCreation extends javax.swing.JFrame {
 
     public static void linebreak(int type) {
 
-        switch (type) {
-
-            case 0:
-
-                System.out.println("---------------------------------------");
+        int margin = 0;
+        for (int i = 0; i <= type; i++) {
+            if (margin > 1) {
                 System.out.println();
-                break;
-
-            case 1:
-
-                System.out.println("------------------------------------------------------------------------------------------");
-                System.out.println();
-                break;
-
-            case 2:
-
-                System.out.println("------------------------------------------------------------------------------------------");
-                System.out.println("------------------------------------------------------------------------------------------");
-                System.out.println();
-                break;
-
-            case 3:
-
-                System.out.println("------------------------------------------------------------------------------------------");
-                System.out.println("------------------------------------------------------------------------------------------");
-                System.out.println("------------------------------------------------------------------------------------------");
-                System.out.println();
-                break;
-
-            case 4:
-
-                System.out.println();
-
+                margin = 0;
+            }
+            System.out.printf("---------------------------------------");
+            margin++;
         }
+        System.out.println("\n");
 
     }
 
@@ -3358,7 +3301,7 @@ public final class WorldCreation extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                new WorldCreation("Generate").setVisible(true);
+                new WorldCreation("Load").setVisible(true);
             }
 
         });

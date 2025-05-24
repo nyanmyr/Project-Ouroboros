@@ -133,3 +133,12 @@ progress (5/23/2025)
 • still trying to fix the bugs w/ renaming world
 • finished saving/ loading of worlds
 • added json folder for organization
+
+version 0.0.23 (prototype)
+progress (5/24/2025)
+ • optimize world settings
+ • optimization work on loading worlds
+ • renamed some redundant variables
+ • revised the linebreak system
+ • started work on character creation screen
+ • implemented scuffed breathing animation

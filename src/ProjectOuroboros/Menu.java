@@ -7,7 +7,7 @@ import javax.swing.ImageIcon;
 
 public class Menu extends javax.swing.JFrame {
     
-    String version = "version 0.0.4 (prototype)";
+    String version = "version 0.0.23 (prototype)";
 
     public Menu() {
         initComponents();

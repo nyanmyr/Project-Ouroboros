@@ -1,5 +1,6 @@
 
  future:
+ • fix the stutter in main menu (call resize before loading)
  • add dynamic scaling to every UI element
 
  suggestions:
@@ -75,7 +76,5 @@
 // ------------------------------------------------------------------------------------------------------------
 
  do:
- • optimize the output print stuff
- • optimize the loading stuff
- • rename the variables
  • character creation screen
+ • fix sliders (loading world issue)

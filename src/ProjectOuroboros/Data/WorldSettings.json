@@ -1,1 +1,25 @@
-{"current":[{"tileScale":"75"},{"mapsize":"1"},{"population":"3.0"},{"mountainSpawnRate":"5"},{"lakeSpawnRate":"5"},{"forestSpawnRate":"5"},{"riverSources":"5"},{"forestSources":"5"},{"hillBranches":"5"},{"forestBranches":"4"}]}
+{
+    "current": [{
+            "worldSettings": [{
+                    "tileScale": "75"
+                }, {
+                    "mapsize": "1"
+                }, {
+                    "population": "3.0"
+                }, {
+                    "mountainSpawnRate": "5"
+                }, {
+                    "lakeSpawnRate": "5"
+                }, {
+                    "forestSpawnRate": "5"
+                }, {
+                    "riverSources": "5"
+                }, {
+                    "forestSources": "5"
+                }, {
+                    "hillBranches": "5"
+                }, {
+                    "forestBranches": "5"
+                }]
+        }]
+}
