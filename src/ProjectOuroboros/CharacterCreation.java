@@ -1,6 +1,7 @@
 
 package ProjectOuroboros;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -8,23 +9,45 @@ import java.awt.RenderingHints;
 import javax.swing.ImageIcon;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import javax.swing.Icon;
+import javax.swing.JLabel;
 
 public class CharacterCreation extends javax.swing.JFrame {
 
-    boolean temp = false;
+    private BufferedImage originalImage;
+    private Map<String, Color> customColors;
 
     public CharacterCreation() {
         initComponents();
 
-        ImageIcon originalIcon = new ImageIcon("src\\ProjectOuroboros\\Images\\CharacterCreationTesting\\torso.png");
+        customColors = new LinkedHashMap<>();
+        customColors.put("Soft Purple", new Color(160, 100, 200));
+        customColors.put("Orange Tint", new Color(255, 140, 0));
+        customColors.put("Ocean Blue", new Color(30, 144, 255));
+        customColors.put("Lime Green", new Color(50, 205, 50));
+        customColors.put("Warm Gray", new Color(120, 120, 120));
+        customColors.put("Deep Red", new Color(200, 20, 20));
+
+        ImageIcon originalIcon = new ImageIcon("src\\ProjectOuroboros\\Images\\CharacterCreationTesting\\Lineart\\torso_lin.png");
+
+        ImageIcon temp = new ImageIcon("src\\ProjectOuroboros\\Images\\CharacterCreationTesting\\Color\\torso_col.png");
+        Image tempImage = temp.getImage();
+        BufferedImage original = toBufferedImage(tempImage);
+        Color target = new Color(255, 100, 50); // Custom RGB color
+        BufferedImage recolored = recolorImage(original, target);
+
+        ImageIcon recoloredIcon = new ImageIcon(recolored);
+        label_TorsoColor.setIcon(recoloredIcon);
 
         Timer t = new Timer();
-        TimerTask tt = new TimerTask() {
+        TimerTask breathingAnimation = new TimerTask() {
 
             double angleDegrees = 0;
-            boolean temp = false;
+            boolean breathPhase = false;
             int waitCount = 0;
             int waitTime = 0;
             boolean wait = false;
@@ -34,31 +57,40 @@ public class CharacterCreation extends javax.swing.JFrame {
 
                 if (!wait) {
                     // turn into ternary operator
-                    if (!temp) {
+                    if (!breathPhase) {
                         angleDegrees--;
-                        label_Head.setBounds(label_Head.getX(), label_Head.getY() - 2, label_Head.getWidth(), label_Head.getHeight());
-                        label_Neck.setBounds(label_Neck.getX(), label_Neck.getY() - 2, label_Neck.getWidth(), label_Neck.getHeight());
-                        label_Arm.setBounds(label_Arm.getX() + 2, label_Arm.getY() - 1, label_Arm.getWidth(), label_Arm.getHeight());
-                        label_Torso.setBounds(label_Torso.getX() + 1, label_Torso.getY() - 1
-                                , label_Torso.getWidth(), label_Torso.getHeight());
                     } else {
                         angleDegrees++;
-                        label_Head.setBounds(label_Head.getX(), label_Head.getY() + 2, label_Head.getWidth(), label_Head.getHeight());
-                        label_Neck.setBounds(label_Neck.getX(), label_Neck.getY() + 2, label_Neck.getWidth(), label_Neck.getHeight());
-                        label_Arm.setBounds(label_Arm.getX() - 2, label_Arm.getY() + 1, label_Arm.getWidth(), label_Arm.getHeight());
-                        label_Torso.setBounds(label_Torso.getX() - 1, label_Torso.getY() + 1
-                                , label_Torso.getWidth(), label_Torso.getHeight());
                     }
 
+                    label_HeadLineart.setLocation(label_HeadLineart.getX(), bop(label_HeadLineart, "y", 2, breathPhase, false));
+                    label_HeadColor.setLocation(label_HeadLineart.getX(), bop(label_HeadLineart, "y", 2, breathPhase, false));
+
+                    label_NeckLineart.setLocation(label_NeckLineart.getX(), bop(label_NeckLineart, "y", 2, breathPhase, false));
+                    label_NeckColor.setLocation(label_NeckLineart.getX(), bop(label_NeckLineart, "y", 2, breathPhase, false));
+
+                    label_ArmLineart.setLocation(bop(label_ArmLineart, "x", 1, breathPhase, true),
+                            bop(label_ArmLineart, "y", 1, breathPhase, false));
+                    label_ArmColor.setLocation(bop(label_ArmLineart, "x", 1, breathPhase, true),
+                            bop(label_ArmLineart, "y", 1, breathPhase, false));
+
+                    label_TorsoLineart.setLocation(bop(label_TorsoLineart, "x", 1, breathPhase, true),
+                            bop(label_TorsoLineart, "y", 1, breathPhase, false));
+                    label_TorsoColor.setLocation(bop(label_TorsoLineart, "x", 1, breathPhase, true),
+                            bop(label_TorsoLineart, "y", 1, breathPhase, false));
+
                     ImageIcon rotatedIcon = new ImageIcon(rotateImageByDegrees(toBufferedImage(originalIcon.getImage()), angleDegrees));
-                    label_Torso.setIcon(rotatedIcon);
+                    label_TorsoLineart.setIcon(rotatedIcon);
+
                     if (angleDegrees <= -3 || angleDegrees >= 0) {
-                        temp = !temp;
+                        breathPhase = !breathPhase;
                         wait = !wait;
-                        if (temp) {
-                            waitTime = 6;
+                        if (breathPhase) {
+                            // breath in wait time
+                            waitTime = 3;
                         } else {
-                            waitTime = 16;
+                            // breath out wait time
+                            waitTime = 12;
                         }
                     }
                 } else {
@@ -73,9 +105,53 @@ public class CharacterCreation extends javax.swing.JFrame {
 
         };
 
-        t.scheduleAtFixedRate(tt, 0, 120);
+        t.scheduleAtFixedRate(breathingAnimation, 0, 120);
 
-//        setExtendedState(CharacterCreation.MAXIMIZED_BOTH);
+        setExtendedState(CharacterCreation.MAXIMIZED_BOTH);
+    }
+
+    public static BufferedImage recolorImage(BufferedImage sourceImage, Color targetColor) {
+        int width = sourceImage.getWidth();
+        int height = sourceImage.getHeight();
+
+        BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+        int newRGB = targetColor.getRGB() & 0x00FFFFFF; // Remove alpha bits
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int pixel = sourceImage.getRGB(x, y);
+                int alpha = (pixel >> 24) & 0xFF;
+
+                if (alpha != 0) {
+                    // Apply the new color while preserving alpha
+                    int recolored = (alpha << 24) | newRGB;
+                    result.setRGB(x, y, recolored);
+                } else {
+                    result.setRGB(x, y, pixel); // Keep transparent
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private int bop(JLabel label, String axis, int bopAmount, boolean phase, boolean inverted) {
+
+        bopAmount = !phase ? bopAmount * -1 : bopAmount;
+
+        switch (axis) {
+            case "y" -> {
+                return label.getY() + bopAmount;
+            }
+            case "x" -> {
+                return label.getX() + bopAmount;
+            }
+            default -> {
+                return 0;
+            }
+        }
+
     }
 
     // Converts an Image to BufferedImage
@@ -125,10 +201,15 @@ public class CharacterCreation extends javax.swing.JFrame {
         panel_Mainpanel = new javax.swing.JPanel();
         panel_CharacterCreation = new javax.swing.JPanel();
         panel_Headshot = new javax.swing.JPanel();
-        label_Head = new javax.swing.JLabel();
-        label_Neck = new javax.swing.JLabel();
-        label_Arm = new javax.swing.JLabel();
-        label_Torso = new javax.swing.JLabel();
+        label_HeadLineart = new javax.swing.JLabel();
+        label_HeadColor = new javax.swing.JLabel();
+        label_NeckLineart = new javax.swing.JLabel();
+        label_NeckColor = new javax.swing.JLabel();
+        label_ArmLineart = new javax.swing.JLabel();
+        label_ArmColor = new javax.swing.JLabel();
+        label_TorsoLineart = new javax.swing.JLabel();
+        label_TorsoColor = new javax.swing.JLabel();
+        combobox_ColorChooser = new javax.swing.JComboBox<>();
         button_New = new javax.swing.JButton();
         label_Background = new javax.swing.JLabel();
 
@@ -155,26 +236,48 @@ public class CharacterCreation extends javax.swing.JFrame {
         panel_Headshot.setBackground(new java.awt.Color(187, 187, 186));
         panel_Headshot.setLayout(null);
 
-        label_Head.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectOuroboros/Images/CharacterCreationTesting/head.png"))); // NOI18N
-        panel_Headshot.add(label_Head);
-        label_Head.setBounds(90, 100, 122, 150);
+        label_HeadLineart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectOuroboros/Images/CharacterCreationTesting/Lineart/head_lin.png"))); // NOI18N
+        panel_Headshot.add(label_HeadLineart);
+        label_HeadLineart.setBounds(90, 100, 122, 150);
 
-        label_Neck.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        label_Neck.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectOuroboros/Images/CharacterCreationTesting/neck.png"))); // NOI18N
-        panel_Headshot.add(label_Neck);
-        label_Neck.setBounds(90, 190, 90, 110);
+        label_HeadColor.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectOuroboros/Images/CharacterCreationTesting/Color/head_col.png"))); // NOI18N
+        panel_Headshot.add(label_HeadColor);
+        label_HeadColor.setBounds(90, 100, 122, 150);
 
-        label_Arm.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectOuroboros/Images/CharacterCreationTesting/arm.png"))); // NOI18N
-        panel_Headshot.add(label_Arm);
-        label_Arm.setBounds(20, 320, 72, 110);
+        label_NeckLineart.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        label_NeckLineart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectOuroboros/Images/CharacterCreationTesting/Lineart/neck_lin.png"))); // NOI18N
+        panel_Headshot.add(label_NeckLineart);
+        label_NeckLineart.setBounds(90, 190, 90, 110);
 
-        label_Torso.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        label_Torso.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectOuroboros/Images/CharacterCreationTesting/torso.png"))); // NOI18N
-        panel_Headshot.add(label_Torso);
-        label_Torso.setBounds(-10, 240, 300, 200);
+        label_NeckColor.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        label_NeckColor.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectOuroboros/Images/CharacterCreationTesting/Color/neck_col.png"))); // NOI18N
+        panel_Headshot.add(label_NeckColor);
+        label_NeckColor.setBounds(90, 190, 90, 110);
+
+        label_ArmLineart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectOuroboros/Images/CharacterCreationTesting/Lineart/arm_lin.png"))); // NOI18N
+        panel_Headshot.add(label_ArmLineart);
+        label_ArmLineart.setBounds(20, 320, 72, 108);
+
+        label_ArmColor.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectOuroboros/Images/CharacterCreationTesting/Color/arm_col.png"))); // NOI18N
+        panel_Headshot.add(label_ArmColor);
+        label_ArmColor.setBounds(20, 320, 72, 108);
+
+        label_TorsoLineart.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        label_TorsoLineart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectOuroboros/Images/CharacterCreationTesting/Lineart/torso_lin.png"))); // NOI18N
+        panel_Headshot.add(label_TorsoLineart);
+        label_TorsoLineart.setBounds(-10, 240, 300, 200);
+
+        label_TorsoColor.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        label_TorsoColor.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ProjectOuroboros/Images/CharacterCreationTesting/Color/torso_col.png"))); // NOI18N
+        panel_Headshot.add(label_TorsoColor);
+        label_TorsoColor.setBounds(-10, 240, 300, 200);
 
         panel_CharacterCreation.add(panel_Headshot);
         panel_Headshot.setBounds(10, 10, 300, 400);
+
+        combobox_ColorChooser.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        panel_CharacterCreation.add(combobox_ColorChooser);
+        combobox_ColorChooser.setBounds(320, 10, 72, 22);
 
         panel_Mainpanel.add(panel_CharacterCreation);
         panel_CharacterCreation.setBounds(170, 40, 580, 420);
@@ -266,11 +369,16 @@ public class CharacterCreation extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton button_New;
-    private javax.swing.JLabel label_Arm;
+    private javax.swing.JComboBox<String> combobox_ColorChooser;
+    private javax.swing.JLabel label_ArmColor;
+    private javax.swing.JLabel label_ArmLineart;
     private javax.swing.JLabel label_Background;
-    private javax.swing.JLabel label_Head;
-    private javax.swing.JLabel label_Neck;
-    private javax.swing.JLabel label_Torso;
+    private javax.swing.JLabel label_HeadColor;
+    private javax.swing.JLabel label_HeadLineart;
+    private javax.swing.JLabel label_NeckColor;
+    private javax.swing.JLabel label_NeckLineart;
+    private javax.swing.JLabel label_TorsoColor;
+    private javax.swing.JLabel label_TorsoLineart;
     private javax.swing.JPanel panel_CharacterCreation;
     private javax.swing.JPanel panel_Headshot;
     private javax.swing.JPanel panel_Mainpanel;
