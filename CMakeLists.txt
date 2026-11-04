@@ -1,91 +1,90 @@
+cmake_minimum_required(VERSION 3.28)
 
+# Project Definition
+project(NacreEngine LANGUAGES CXX) # change the name of .exe file here
 
-cmake_minimum_required(VERSION 3.16)
+# --- Global Configuration ---
+# Output binaries to a clean bin/ directory
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-set(CMAKE_CXX_STANDARD 17)
+# Interprocedural Optimization (Link Time Optimization)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
-#! ! ! ! ! ! !
-#set this to true to ship the game!
-#basically this will change the RESOURCES_PATH to be the local path
-#! ! ! ! ! ! !
-#DELETE THE OUT FOLDER AFTER CHANGING THIS BECAUSE VISUAL STUDIO DOESN'T SEEM TO RECOGNIZE THIS CHANGE AND REBUILD!
-option(PRODUCTION_BUILD "Make this a production build!" OFF)
-#DELETE THE OUT FOLDER AFTER CHANGING THIS BECAUSE VISUAL STUDIO DOESN'T SEEM TO RECOGNIZE THIS CHANGE AND REBUILD!
-
-
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Release>:Release>")
+# Fix: Dynamically set MSVC Runtime Library to /MT for Release and /MTd for Debug
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE) #link time optimization
+# Build Options
+option(PRODUCTION_BUILD "Make this a production build!" OFF)
 
+# --- SFML Dependency (FetchContent) ---
 # Ensure SFML is built as static libraries
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build SFML as static libraries" FORCE)
 
-#for imgui-sfml
-#set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/imgui-docking/imgui")
+include(FetchContent)
+FetchContent_Declare(SFML
+    GIT_REPOSITORY https://github.com/SFML/SFML.git
+    GIT_TAG 3.1.0
+    GIT_SHALLOW ON
+    EXCLUDE_FROM_ALL
+    SYSTEM
+)
+FetchContent_MakeAvailable(SFML)
 
-if(MSVC) 
-add_compile_options(/arch:AVX2) #make sure SIMD optimizations take place
-endif()
-
-project(NacreEngine)
-
-
-
-
-#Add SFML, and here you would add other libraries if needed!
-add_subdirectory(thirdparty/SFML-2.6.1)
-
-
-# MY_SOURCES is defined to be a list of all the source files for my game 
+# --- Sources & Executable ---
 # DON'T ADD THE SOURCES BY HAND, they are already added with this macro
 file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
+# --- Application Icon (Windows) ---
+set(APP_ICON_RESOURCE "")
+if(WIN32)
+    # Include the .rc file in sources so CMake compiles it via rc.exe / windres
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/app.rc")
+        set(APP_ICON_RESOURCE "${CMAKE_CURRENT_SOURCE_DIR}/app.rc")
+    endif()
+endif()
 
-add_executable("${CMAKE_PROJECT_NAME}")
+add_executable(${CMAKE_PROJECT_NAME} ${MY_SOURCES} ${APP_ICON_RESOURCE})
 
-set_property(TARGET "${CMAKE_PROJECT_NAME}" PROPERTY CXX_STANDARD 17)
+# --- Target Properties & Includes ---
+# Require C++23
+target_compile_features(${CMAKE_PROJECT_NAME} PRIVATE cxx_std_23)
 
+# Add Include Directory
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include/")
 
-
+# --- Build Configuration Logic ---
 if(PRODUCTION_BUILD)
-	# setup the ASSETS_PATH macro to be in the root folder of your exe
-	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="./resources/") 
-
-	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC PRODUCTION_BUILD=1) 
-
+    # Setup the RESOURCES_PATH macro to be in the root folder of your exe
+    target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE RESOURCES_PATH="./resources/" PRODUCTION_BUILD=1)
+    target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE SPRITES_PATH="./resources/sprites/" PRODUCTION_BUILD=1) 
+    
+    if(MSVC)
+        # Remove the console only in production builds
+        set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup") 
+    endif()
 else()
-	# This is useful to get an ASSETS_PATH in your IDE during development
-	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resources/")
-	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC PRODUCTION_BUILD=0) 
-
+    # This is useful to get a RESOURCES_PATH in your IDE during development
+    target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resources/" PRODUCTION_BUILD=0) 
+    target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE SPRITES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resources/sprites/" PRODUCTION_BUILD=0) 
 endif()
 
-target_sources("${CMAKE_PROJECT_NAME}" PRIVATE
-    ${MY_SOURCES}
- )
-
-if(MSVC) # If using the VS compiler...
-
-	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC _CRT_SECURE_NO_WARNINGS)
-
-
-	#YOU CAN REMOVE THE CONSOLE WITH THIS LINE! YOU CAN EVEN DO AN IF PRODUCTION_BUILD TO REMOVE IT ONLY IN PRODUCTION BUILDS
-	#set_target_properties("${CMAKE_PROJECT_NAME}" PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup") #no console
-	
-
-
+# --- MSVC Specifics ---
+if(MSVC) 
+    # SIMD optimizations
+    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE /arch:AVX2) 
+    target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE _CRT_SECURE_NO_WARNINGS)
 endif()
 
-target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
-
-
-
-# Link SFML libraries statically, Here wou would add other libraries!
-target_link_libraries("${CMAKE_PROJECT_NAME}" 
-	sfml-graphics 
-	sfml-window 
-	sfml-system 
-	sfml-audio 
-	sfml-network
+# --- Linking ---
+# Link SFML libraries statically (Note: SFML 3 requires the SFML:: namespace)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
+    SFML::Graphics 
+    SFML::Window 
+    SFML::System 
+    # SFML::Audio 
+    # SFML::Network
 )
+
+# --- IDE Integration ---
+# Set Visual Studio startup project automatically
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${CMAKE_PROJECT_NAME})

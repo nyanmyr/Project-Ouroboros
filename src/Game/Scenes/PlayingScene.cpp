@@ -1,68 +1,97 @@
 #include <SFML/Graphics.hpp>
+
+#include <optional>
+#include <queue>
+
 #include "../src/Game/Headers/GameManager.hpp"
 #include "../src/Game/Headers/Scenes.hpp"
 
-using sf::RenderWindow;
-using sf::RectangleShape;
-using sf::Vector2f;
-using sf::Color;
-using sf::Clock;
-using sf::Event;
-using sf::Keyboard;
+void playingScene()
+{
+	// game state variables
+	sf::Clock clock;
+	std::queue<Entity> renderQueue;
 
-void PlayingScene(RenderWindow& window) {
-	EntityManager& em = EntityManager::getInstance();
-	ComponentManager& cm = ComponentManager::getInstance();
+	Component::Singleton::TexturesContainer loadedTextures{};
 
 	// entity instantiation
-	Entity player = em.createEntity();
-	cm.addComponent(
-		player,
-		CPosition{
-		((float)window.getSize().x / 2) - 50, ((float)window.getSize().y / 2) - 50
+	Entity player = EntityMaker::player
+	(
+		Component::Drag
+		{
+			.x = 50.0,
+			.y = 50.0,
+		},
+		Component::Color{ .data = sf::Color::Green },
+		Component::ZIndex{ .index = static_cast<int>(Enum::Layer::MAIN) },
+		Component::Texture{ .data = Enum::Texture::TEXTURE_PLACEHOLDER },
+		Component::Position
+		{
+			.x = 0.0,
+			.y = 0.0,
+		},
+		Component::Velocity
+		{
+			.minX = -300.0,
+			.minY = -300.0,
+			.maxX = 300.0,
+			.maxY = 300.0,
+		},
+		Component::Transform
+		{
+			.width = 40.0,
+			.height = 40.0,
+		},
+		Component::OriginPoint{ .data = Enum::OriginPoint::CENTER },
+		Component::Acceleration
+		{
+			.x = 500.0,
+			.y = 500.0,
 		}
 	);
-	cm.addComponent(
-		player,
-		CShape{
-		RectangleShape(Vector2f(100.f, 100.f))
-		}
-	);
-	cm.getComponent<CShape>(player).rect.setFillColor(Color::Red);
 
-	Clock clock;
+	// onstart systems
+	Start::loadTextures(loadedTextures);
+	Start::loadSprites(loadedTextures);
+	Start::setSpriteOrigin();
+	Start::setColor();
 
-	while (window.isOpen())
+	while (Asset::window().isOpen())
 	{
 		DeltaTime dt = clock.restart().asSeconds();
 
-		Event event;
-		while (window.pollEvent(event))
+		while (const std::optional event = Asset::window().pollEvent())
 		{
-			if (event.type == Event::Closed)
+			if (event->is<sf::Event::Closed>())
 			{
-				window.close();
-			}
-
-			if (event.type == Event::KeyReleased)
-			{
-				if (event.key.code == Keyboard::Space)
-				{
-					// on exit
-					cm.entityDestroyed(player);
-					em.destroyEntity(player);
-
-					playScene(window, MENU);
-					window.close();
-				}
+				Asset::window().close();
 			}
 		}
 
 		// systems
+		Control::doPlayerControl
+		(
+			player,
+			dt
+		);
+		Update::boundaryBounce
+		(
+			-(Config::SCREEN_WIDTH / 2.0),
+			(Config::SCREEN_WIDTH / 2.0),
+			-(Config::SCREEN_HEIGHT / 2.0),
+			(Config::SCREEN_HEIGHT / 2.0)
+		);
+		Update::move(dt);
+		Update::drag(dt);
 
-		window.clear();
+		Asset::window().clear();
 		// render systems
-		RenderSystem(window);
-		window.display();
+		Render::doZIndex(renderQueue);
+		Render::render
+		(
+			Asset::window(),
+			renderQueue
+		);
+		Asset::window().display();
 	}
 }

@@ -3,26 +3,50 @@
 #include "Headers/GameManager.hpp"
 #include "Headers/Scenes.hpp"
 
-#include <iostream>
-
-using sf::RenderWindow;
-using sf::VideoMode;
-
-constexpr int SCREEN_WIDTH = 800;
-constexpr int SCREEN_HEIGHT = 600;
-
-constexpr int MAX_FPS = 60;
-
-void main() {
-	RenderWindow window(VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Nacre Engine", sf::Style::Close);
-	window.setFramerateLimit(MAX_FPS);
-
-	EntityManager& em = EntityManager::getInstance();
-	ComponentManager& cm = ComponentManager::getInstance();
-
+int main()
+{
 	// components registration
-	cm.registerComponent<CPosition>();
-	cm.registerComponent<CShape>();
+	nc().registerComponent<Component::Position>();
+	nc().registerComponent<Component::Transform>();
+	nc().registerComponent<Component::OriginOffsets>();
+	nc().registerComponent<Component::OriginPoint>();
+	nc().registerComponent<Component::Button>();
+	nc().registerComponent<Component::Text>();
+	nc().registerComponent<Component::NextScene>();
+	nc().registerComponent<Component::ZIndex>();
+	nc().registerComponent<Component::Velocity>();
+	nc().registerComponent<Component::Acceleration>();
+	nc().registerComponent<Component::PlayerController>();
+	nc().registerComponent<Component::Drag>();
+	nc().registerComponent<Component::Sprite>();
+	nc().registerComponent<Component::Texture>();
+	nc().registerComponent<Component::Color>();
 
-	playScene(window, Scene::MENU);
+	// event registration
+	nc().registerEvent<Event::SetSpriteOrigin>();
+	nc().registerEvent<Event::SetColor>();
+	nc().registerEvent<Event::LoadSprite>();
+	nc().registerEvent<Event::SetTextString>();
+	nc().registerEvent<Event::SetTextSize>();
+	nc().registerEvent<Event::SetTextColor>();
+	nc().registerEvent<Event::SetTextOrigin>();
+	nc().registerEvent<Event::MouseClick>();
+	nc().registerEvent<Event::MouseMoved>();
+	nc().registerEvent<Event::PlayScene>();
+
+	// listener to event linking
+	nc().listen<Event::SetSpriteOrigin>(Listener::setSpriteOrigin);
+	nc().listen<Event::SetColor>(Listener::setColor);
+	nc().listen<Event::LoadSprite>(Listener::loadSprite);
+	nc().listen<Event::SetTextString>(Listener::setTextString);
+	nc().listen<Event::SetTextSize>(Listener::setTextSize);
+	nc().listen<Event::SetTextColor>(Listener::setTextColor);
+	nc().listen<Event::SetTextOrigin>(Listener::setTextOrigin);
+	nc().listen<Event::MouseClick>(Listener::clickedButton);
+	nc().listen<Event::MouseMoved>(Listener::hoverButton);
+	nc().listen<Event::MouseMoved>(Listener::idleButton);
+	nc().listen<Event::PlayScene>(Listener::playNextScene);
+
+	// play the first scene
+	playScene(Scene::MENU);
 }

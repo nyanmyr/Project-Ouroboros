@@ -27,13 +27,13 @@ private:
 	EntityManager(const EntityManager&) = delete;
 	EntityManager& operator=(const EntityManager&) = delete;
 public:
-	static EntityManager& getInstance()
+	static auto& getInstance()
 	{
 		static EntityManager instance;
 		return instance;
 	}
 
-	Entity createEntity()
+	auto createEntity()
 	{
 		if (livingCount >= MAX_ENTITIES)
 		{
@@ -62,6 +62,23 @@ public:
 	bool isAlive(Entity entity) const
 	{
 		return alive[entity];
+	}
+
+	// same goes here: inneficient but works
+	void destroyAllEntities()
+	{
+		//std::cout << "living: " << livingCount << "\n";
+		for (Entity i = 0; i < MAX_ENTITIES; ++i)
+		{
+			if (alive[i])
+			{
+				//std::cout << "isAlive: " << alive[i] << "\n";
+				alive[i] = false;
+				availableEntities.push(i);
+				--livingCount;
+			}
+		}
+		//std::cout << "living: " << livingCount << "\n";
 	}
 };
 

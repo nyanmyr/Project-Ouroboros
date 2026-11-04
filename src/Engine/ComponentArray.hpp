@@ -34,7 +34,7 @@ public:
 		return components.at(entity);
 	}
 
-	bool hasData(Entity entity)
+	bool hasData(Entity entity) const
 	{
 		return components.find(entity) != components.end();
 	}
