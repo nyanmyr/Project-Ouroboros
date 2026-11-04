@@ -24,7 +24,7 @@ void menuScene()
 		Component::Text
 		{
 			.box = Asset::font(Asset::Font::MAIN),
-			.string = "Nacre Engine",
+			.string = "Project Ouroboros",
 			.size = 64,
 			.color = sf::Color::White,
 			.format = Enum::TextFormat::CENTER,

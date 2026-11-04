@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 
 # Project Definition
-project(NacreEngine LANGUAGES CXX) # change the name of .exe file here
+project(ProjectOuroboros LANGUAGES CXX) # change the name of .exe file here
 
 # --- Global Configuration ---
 # Output binaries to a clean bin/ directory
