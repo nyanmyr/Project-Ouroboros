@@ -8,13 +8,14 @@
 #include <unordered_map>
 #include <utility>
 #include <memory>
+#include <windows.h>
 
 namespace Config
 {
-	inline constexpr int SCREEN_WIDTH = 800;
-	inline constexpr int SCREEN_HEIGHT = 600;
+	inline constexpr int SCREEN_WIDTH = 1280;
+	inline constexpr int SCREEN_HEIGHT = 720;
 	inline constexpr int MAX_FPS = 60;
-	inline const std::string WINDOW_NAME = "Nacre Engine";
+	inline const std::string WINDOW_NAME = "Project Ouroboros";
 }
 
 namespace Asset
@@ -59,7 +60,7 @@ namespace Asset
 					Config::SCREEN_HEIGHT
 					}),
 				Config::WINDOW_NAME,
-				sf::Style::Close
+				sf::Style::Default
 			);
 
 			w.setFramerateLimit(Config::MAX_FPS);
@@ -81,6 +82,9 @@ namespace Asset
 					)
 				)
 			);
+
+			HWND hwnd = window.getNativeHandle();
+			ShowWindow(hwnd, SW_MAXIMIZE);
 
 			return w;
 			}();
