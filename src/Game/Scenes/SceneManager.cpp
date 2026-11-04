@@ -10,6 +10,9 @@ void playScene(Scene scene) {
     case Scene::PLAYING:
         playingScene();
         break;
+    case Scene::CHARACTER_CREATION:
+        characterCreation();
+        break;
     default:
         throw std::runtime_error("Scene does not exist.");
         break;

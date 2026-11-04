@@ -38,12 +38,12 @@ void menuScene()
 	);
 
 	// entity instantiation
-	Entity playButton = EntityMaker::button
+	Entity characterCreationButton = EntityMaker::button
 	(
 		Component::Text
 		{
 			.box = Asset::font(Asset::Font::MAIN),
-			.string = "Play",
+			.string = "Character Creation",
 			.size = 64,
 			.color = sf::Color::White,
 			.format = Enum::TextFormat::CENTER,
@@ -63,7 +63,7 @@ void menuScene()
 			.x = 0.0,
 			.y = 0.0,
 		},
-		Component::NextScene{ .next = Scene::PLAYING },
+		Component::NextScene{ .next = Scene::CHARACTER_CREATION },
 		Component::Transform
 		{
 			.width = 200.0,
@@ -71,6 +71,40 @@ void menuScene()
 		},
 		Component::OriginPoint{ .data = Enum::OriginPoint::CENTER }
 	);
+
+	Entity playButton = EntityMaker::button
+	(
+		Component::Text
+		{
+			.box = Asset::font(Asset::Font::MAIN),
+			.string = "Play",
+			.size = 64,
+			.color = sf::Color::White,
+			.format = Enum::TextFormat::CENTER,
+		},
+		Component::Color{ .data = sf::Color::Red },
+		Component::Button
+		{
+			.hoverAnimationDuration = DEFAULT_HOVER_ANIMATION_DURATION,
+			.idleAnimationDuration = DEFAULT_IDLE_ANIMATION_DURATION,
+			.clickedAnimationDuration = DEFAULT_CLICKED_ANIMATION_DURATION,
+
+		},
+		Component::ZIndex{ .index = static_cast<int>(Enum::Layer::UI) },
+		Component::Texture{ .data = Enum::Texture::TEXTURE_PLACEHOLDER },
+		Component::Position
+		{
+			.x = 0.0,
+			.y = 150.0,
+		},
+		Component::NextScene{ .next = Scene::PLAYING },
+		Component::Transform
+		{
+			.width = 200.0,
+			.height = 100.0,
+		},
+		Component::OriginPoint{ .data = Enum::OriginPoint::CENTER }
+		);
 
 	// onstart systems
 	Start::setText();

@@ -48,5 +48,5 @@ int main()
 	nc().listen<Event::PlayScene>(Listener::playNextScene);
 
 	// play the first scene
-	playScene(Scene::MENU);
+	playScene(Scene::CHARACTER_CREATION);
 }
